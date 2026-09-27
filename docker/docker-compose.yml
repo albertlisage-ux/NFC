@@ -1,0 +1,38 @@
+# Optional self-contained deployment: web + database.
+# For the existing domain, the simpler route is to copy the project to the
+# LAMP host and use the .env file there.
+
+services:
+  portal:
+    build:
+      context: ..
+      dockerfile: docker/Dockerfile
+    depends_on:
+      - db
+    environment:
+      DAT_DB_HOST: db
+      DAT_DB_PORT: 3306
+      DAT_DB_NAME: digital_asset_tag
+      DAT_DB_USER: portal
+      DAT_DB_PASS: ${MYSQL_PASSWORD:?set MYSQL_PASSWORD}
+      PORTAL_BASE_URL: ${PORTAL_BASE_URL:-http://localhost:8080}
+    ports:
+      - "8080:80"
+    volumes:
+      - uploads:/var/www/html/storage/uploads
+    restart: unless-stopped
+
+  db:
+    image: mariadb:11
+    environment:
+      MARIADB_DATABASE: digital_asset_tag
+      MARIADB_USER: portal
+      MARIADB_PASSWORD: ${MYSQL_PASSWORD:?set MYSQL_PASSWORD}
+      MARIADB_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD:?set MYSQL_ROOT_PASSWORD}
+    volumes:
+      - db_data:/var/lib/mysql
+    restart: unless-stopped
+
+volumes:
+  db_data:
+  uploads:

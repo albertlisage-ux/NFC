@@ -1,0 +1,12 @@
+# Uploaded photos are served as static files, but must never execute.
+php_flag engine off
+
+<FilesMatch "\.(php|phtml|phar|pl|py|cgi|sh)$">
+    <IfModule mod_authz_core.c>
+        Require all denied
+    </IfModule>
+    <IfModule !mod_authz_core.c>
+        Order allow,deny
+        Deny from all
+    </IfModule>
+</FilesMatch>

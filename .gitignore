@@ -1,0 +1,24 @@
+# Local environment
+.env
+*.local.php
+
+# Runtime data
+logs/*.log
+storage/uploads/*
+!storage/uploads/.gitkeep
+
+# OS / editor noise
+.DS_Store
+.idea/
+.vscode/*
+!.vscode/sftp.example.json
+Thumbs.db
+
+# Dependencies
+vendor/
+node_modules/
+
+# Local databases and backups
+*.sqlite
+*.sql.gz
+backups/
