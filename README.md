@@ -101,6 +101,29 @@ touching its tables. Verified schema: MySQL 5.7+/MariaDB 10.2+.
 
 The portal is a plain PHP application. Two options:
 
+**Fastest route: use the bundled uploader**, which mirrors the workflow of the
+existing LinkTec site (rsync over SSH, credentials in a local
+`.vscode/sftp.json`).
+
+```bash
+cp .vscode/sftp.example.json .vscode/sftp.json   # once, then fill in host/user/password
+SYNC_DRY_RUN=1 ./scripts/deploy-remote.sh        # preview the file list
+./scripts/deploy-remote.sh                       # upload
+./scripts/deploy-remote.sh ssh "php scripts/migrate.php"    # create the tables
+./scripts/deploy-remote.sh ssh "php scripts/seed-demo.php"  # optional demo tag
+```
+
+`.vscode/sftp.json` and `.env` are ignored by Git; keep them local. The upload
+excludes `.git`, `tests/`, `docker/`, uploaded photos and the browser test
+scripts.
+
+The portal is currently live at `https://www.eurohydraulicparts.com/nfc/`, with
+the files in `/data/wwwroot/nfc` and the tables in the `visionary_db` schema
+(`dat_` prefix). The demo tag page is
+`https://www.eurohydraulicparts.com/nfc/t/DEMTAG24`.
+
+Manual alternatives:
+
 1. **Sub-directory** on the current LAMP host, e.g. `https://www.eurohydraulicparts.com/nfc/`.
    Upload the project into `nfc/`, keep `.htaccess` (Apache rewrite for
    `/nfc/t/{publicId}`), and set:

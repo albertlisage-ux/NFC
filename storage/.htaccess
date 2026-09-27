@@ -1,5 +1,12 @@
 # Uploaded photos are served as static files, but must never execute.
-php_flag engine off
+# php_flag only exists when mod_php is loaded; with php-fpm it is not needed
+# because the handler below already denies script execution.
+<IfModule mod_php7.c>
+    php_flag engine off
+</IfModule>
+<IfModule mod_php.c>
+    php_flag engine off
+</IfModule>
 
 <FilesMatch "\.(php|phtml|phar|pl|py|cgi|sh)$">
     <IfModule mod_authz_core.c>

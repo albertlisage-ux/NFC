@@ -33,9 +33,16 @@ if ($schema === false) {
     exit(1);
 }
 
+// Drop comment lines, then split on statement terminators.
+$lines = array_filter(
+    preg_split('/\r\n|\n/', $schema),
+    static fn ($line) => strpos(trim($line), '--') !== 0
+);
+$schema = implode("\n", $lines);
+
 $statements = array_filter(
     array_map('trim', preg_split('/;\s*[\r\n]+/', $schema)),
-    static fn ($statement) => $statement !== '' && strpos($statement, '--') !== 0
+    static fn ($statement) => $statement !== ''
 );
 
 $created = 0;
@@ -52,5 +59,9 @@ foreach ($statements as $statement) {
 
 echo 'Schema applied (' . $created . ' statements).' . PHP_EOL;
 
-$tables = dat_all('SHOW TABLES LIKE ?', ['dat_%']);
+$tables = dat_all(
+    'SELECT table_name FROM information_schema.tables
+      WHERE table_schema = DATABASE() AND table_name LIKE ?',
+    ['dat\_%']
+);
 echo 'Portal tables: ' . implode(', ', array_map(static fn ($row) => reset($row), $tables)) . PHP_EOL;
