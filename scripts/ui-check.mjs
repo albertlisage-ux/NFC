@@ -24,6 +24,7 @@ const args = new Map(
 
 const base = (args.get('base') || 'http://127.0.0.1:8080').replace(/\/$/, '');
 const diagnosePath = args.get('diagnose') || null;
+const probePath = args.get('probe') || null;
 
 function resolvePlaywright() {
   const candidates = [process.env.PLAYWRIGHT_MODULE];
@@ -56,6 +57,54 @@ const record = (label, ok, detail = '') => {
 
 const browser = await chromium.launch({ channel: 'chrome' });
 
+if (probePath) {
+  const context = await browser.newContext({ viewport: { width: Number(args.get('width') || 390), height: 844 } });
+  const page = await context.newPage();
+  await page.goto(base + probePath, { waitUntil: 'domcontentloaded' });
+  const result = await page.evaluate(() => {
+    const width = () => document.documentElement.scrollWidth;
+    const baseline = width();
+    const candidates = [
+      '.table-scroll', '.nfc-sample', '.data-table', '.faq', '.step-list',
+      '.split-grid', '.explore-grid', '.layer-columns', '.example-list', '.tag-card-frame',
+    ];
+    const rows = [];
+    candidates.forEach((selector) => {
+      const nodes = [...document.querySelectorAll(selector)];
+      if (!nodes.length) return;
+      const previous = nodes.map((node) => node.style.display);
+      nodes.forEach((node) => { node.style.display = 'none'; });
+      const after = width();
+      nodes.forEach((node, index) => { node.style.display = previous[index]; });
+      rows.push({ selector, count: nodes.length, without: after, delta: baseline - after });
+    });
+
+    // Widest elements, ignoring whether they sit inside a scroll container.
+    let widest = null;
+    document.querySelectorAll('body *').forEach((element) => {
+      const rect = element.getBoundingClientRect();
+      if (!widest || rect.right > widest.right) {
+        widest = {
+          tag: element.tagName.toLowerCase(),
+          cls: (element.className || '').toString().slice(0, 50),
+          right: Math.round(rect.right),
+          width: Math.round(rect.width),
+        };
+      }
+    });
+
+    return { baseline, rows, widest };
+  });
+  console.log(`baseline scrollWidth ${result.baseline} at ${Number(args.get('width') || 390)}px`);
+  for (const row of result.rows) {
+    console.log(`  hide ${row.selector} (${row.count}) -> ${row.without} (saves ${row.delta})`);
+  }
+  console.log('widest element:', JSON.stringify(result.widest));
+  await context.close();
+  await browser.close();
+  process.exit(0);
+}
+
 if (diagnosePath) {
   const context = await browser.newContext({ viewport: { width: Number(args.get('width') || 390), height: 844 } });
   const page = await context.newPage();
@@ -63,6 +112,17 @@ if (diagnosePath) {
   const offenders = await page.evaluate(() => {
     const width = document.documentElement.clientWidth;
     const found = [];
+    const inScroller = (element) => {
+      let node = element.parentElement;
+      while (node && node !== document.documentElement) {
+        const overflowX = getComputedStyle(node).overflowX;
+        if (overflowX === 'auto' || overflowX === 'scroll' || overflowX === 'hidden') {
+          return true;
+        }
+        node = node.parentElement;
+      }
+      return false;
+    };
     document.querySelectorAll('body *').forEach((element) => {
       const rect = element.getBoundingClientRect();
       if (rect.width === 0 && rect.height === 0) return;
@@ -73,14 +133,22 @@ if (diagnosePath) {
           left: Math.round(rect.left),
           right: Math.round(rect.right),
           width: Math.round(rect.width),
+          scroller: inScroller(element),
         });
       }
     });
-    return { width, found: found.slice(0, 25) };
+    return {
+      width,
+      docScrollWidth: document.documentElement.scrollWidth,
+      bodyScrollWidth: document.body.scrollWidth,
+      unclipped: found.filter((item) => !item.scroller).slice(0, 15),
+      found: found.slice(0, 25),
+    };
   });
-  console.log(`viewport ${offenders.width}px, ${offenders.found.length} element(s) outside the viewport:`);
-  for (const item of offenders.found) {
-    console.log(`  <${item.tag} class="${item.cls}"> left=${item.left} right=${item.right} width=${item.width}`);
+  console.log(`viewport ${offenders.width}px, doc scrollWidth=${offenders.docScrollWidth}, body scrollWidth=${offenders.bodyScrollWidth}`);
+  console.log(`elements outside the viewport: ${offenders.found.length}, of those not inside a scroll container: ${offenders.unclipped.length}`);
+  for (const item of (offenders.unclipped.length ? offenders.unclipped : offenders.found)) {
+    console.log(`  <${item.tag} class="${item.cls}"> left=${item.left} right=${item.right} width=${item.width}${item.scroller ? ' (scroll container)' : ''}`);
   }
   await context.close();
   await browser.close();
@@ -217,6 +285,60 @@ for (const viewport of viewports) {
       record('home: hero follows the header directly', report.heroOffset >= 0 && report.heroOffset < 90, `${report.heroOffset}px`);
     }
   }
+
+  await context.close();
+}
+
+/* ------------------------------------------------- tab behaviour check -- */
+
+{
+  console.log('\ntab switching on /use-cases');
+  const context = await browser.newContext({ viewport: { width: 1440, height: 1000 } });
+  const page = await context.newPage();
+  await page.goto(base + '/use-cases', { waitUntil: 'domcontentloaded' });
+
+  const state = async () => page.evaluate(() => {
+    const panels = [...document.querySelectorAll('.type-panel')];
+    const visible = panels.filter((panel) => panel.getBoundingClientRect().height > 0);
+    const selected = [...document.querySelectorAll('[role="tab"][aria-selected="true"]')];
+    return {
+      total: panels.length,
+      visibleCount: visible.length,
+      visibleId: visible[0] ? visible[0].id : null,
+      selectedHref: selected[0] ? selected[0].getAttribute('href') : null,
+      pageHeight: document.documentElement.scrollHeight,
+    };
+  });
+
+  const initial = await state();
+  record('one panel is open on load', initial.visibleCount === 1, `${initial.visibleCount} of ${initial.total}`);
+  record('the first panel is the one open', initial.visibleId === 'type-pet', String(initial.visibleId));
+  record('the first tab is marked selected', initial.selectedHref === '#type-pet', String(initial.selectedHref));
+
+  // Click the "Item" tab, the exact case from the report.
+  await page.click('[role="tab"][aria-controls="type-item"]');
+  await page.waitForTimeout(200);
+  const afterClick = await state();
+  record('clicking Item opens only the Item panel', afterClick.visibleCount === 1 && afterClick.visibleId === 'type-item',
+    `${afterClick.visibleCount} visible, ${afterClick.visibleId}`);
+  record('clicking Item marks its tab selected', afterClick.selectedHref === '#type-item', String(afterClick.selectedHref));
+  record('the page did not grow into a full list', afterClick.pageHeight <= initial.pageHeight + 10,
+    `${initial.pageHeight} -> ${afterClick.pageHeight}`);
+
+  // Deep link straight to a panel.
+  await page.goto(base + '/use-cases#type-industrial', { waitUntil: 'domcontentloaded' });
+  await page.waitForTimeout(200);
+  const deepLink = await state();
+  record('deep link #type-industrial opens that panel', deepLink.visibleCount === 1 && deepLink.visibleId === 'type-industrial',
+    `${deepLink.visibleCount} visible, ${deepLink.visibleId}`);
+
+  // Keyboard navigation.
+  await page.goto(base + '/use-cases', { waitUntil: 'domcontentloaded' });
+  await page.focus('[role="tab"][aria-controls="type-pet"]');
+  await page.keyboard.press('ArrowRight');
+  await page.waitForTimeout(200);
+  const afterKey = await state();
+  record('arrow key moves to the next type', afterKey.visibleId === 'type-bicycle', String(afterKey.visibleId));
 
   await context.close();
 }

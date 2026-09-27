@@ -119,7 +119,7 @@ if (!function_exists('dat_demo_catalog')) {
                     'machine_id' => 'M-2021-0147',
                     'serial' => 'SN-4471-88',
                     'location' => t('case.industrial.location', 'Bay 3, plant 2'),
-                    'service_contact' => 'service@example.com',
+                    'service_contact' => t('case.industrial.service', 'Service desk, extension 240'),
                 ],
             ],
         ];

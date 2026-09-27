@@ -74,4 +74,86 @@
     field.addEventListener('input', update);
     update();
   });
+
+  /**
+   * Asset type tabs on the use cases page.
+   *
+   * Visibility is handled by CSS through the URL fragment, so the page already
+   * works without this script. Here we only add the keyboard and screen reader
+   * behaviour of a real tab list and keep the ARIA state in step with the hash.
+   */
+  document.querySelectorAll('[data-tabs]').forEach(function (root) {
+    var tabs = Array.prototype.slice.call(root.querySelectorAll('[role="tab"]'));
+    if (!tabs.length) {
+      return;
+    }
+
+    var panelIdOf = function (tab) {
+      return tab.getAttribute('aria-controls');
+    };
+
+    var activeIndex = function () {
+      var hash = window.location.hash.replace('#', '');
+      var index = tabs.findIndex(function (tab) {
+        return tab.getAttribute('href') === '#' + hash;
+      });
+      return index === -1 ? 0 : index;
+    };
+
+    var sync = function () {
+      var current = activeIndex();
+      tabs.forEach(function (tab, index) {
+        var selected = index === current;
+        tab.setAttribute('aria-selected', selected ? 'true' : 'false');
+        tab.setAttribute('tabindex', selected ? '0' : '-1');
+        var panel = document.getElementById(panelIdOf(tab));
+        if (panel) {
+          panel.setAttribute('aria-hidden', selected ? 'false' : 'true');
+        }
+      });
+    };
+
+    var activate = function (index, moveFocus) {
+      var tab = tabs[(index + tabs.length) % tabs.length];
+      if (!tab) {
+        return;
+      }
+      if (window.location.hash !== tab.getAttribute('href')) {
+        window.location.hash = tab.getAttribute('href');
+      }
+      sync();
+      if (moveFocus) {
+        tab.focus();
+        var panel = document.getElementById(panelIdOf(tab));
+        if (panel && panel.scrollIntoView) {
+          panel.scrollIntoView({ block: 'nearest' });
+        }
+      }
+    };
+
+    tabs.forEach(function (tab, index) {
+      tab.addEventListener('click', function () {
+        sync();
+      });
+      tab.addEventListener('keydown', function (event) {
+        var key = event.key;
+        if (key === 'ArrowRight' || key === 'ArrowDown') {
+          event.preventDefault();
+          activate(index + 1, true);
+        } else if (key === 'ArrowLeft' || key === 'ArrowUp') {
+          event.preventDefault();
+          activate(index - 1, true);
+        } else if (key === 'Home') {
+          event.preventDefault();
+          activate(0, true);
+        } else if (key === 'End') {
+          event.preventDefault();
+          activate(tabs.length - 1, true);
+        }
+      });
+    });
+
+    window.addEventListener('hashchange', sync);
+    sync();
+  });
 })();

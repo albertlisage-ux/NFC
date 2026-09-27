@@ -17,7 +17,14 @@ require_once __DIR__ . '/assets.php';
 if (!function_exists('dat_asset_url')) {
     function dat_asset_url($path = '')
     {
-        return dat_url('assets/' . ltrim((string) $path, '/'));
+        $relative = ltrim((string) $path, '/');
+
+        // Cache busting: browsers and the CDN in front of this site cache
+        // static files for hours, so a changed file has to get a new URL.
+        $file = DAT_APP_ROOT . '/assets/' . $relative;
+        $version = is_file($file) ? (string) filemtime($file) : DAT_VERSION;
+
+        return dat_url('assets/' . $relative) . '?v=' . $version;
     }
 }
 
@@ -138,7 +145,7 @@ if (!function_exists('dat_tag_card')) {
         $foundUrl = $options['found_url'] ?? null;
         // The tag page owns the h1; previews embedded in another page use h2.
         $headingLevel = (int) ($options['heading_level'] ?? 1);
-        $headingTag = in_array($headingLevel, [1, 2, 3], true) ? 'h' . $headingLevel : 'h1';
+        $headingTag = in_array($headingLevel, [1, 2, 3, 4, 5, 6], true) ? 'h' . $headingLevel : 'h1';
         ?>
         <article class="tag-card<?= $compact ? ' tag-card-compact' : '' ?>">
             <header class="tag-card-head">
@@ -344,7 +351,8 @@ if (!function_exists('dat_page_end')) {
         </div>
     </footer>
 <?php endif; ?>
-    <script src="<?= e(dat_asset_url('js/portal.js')) ?>" defer></script>
+    <!-- data-cfasync keeps Cloudflare's script rewriting away from this file. -->
+    <script data-cfasync="false" src="<?= e(dat_asset_url('js/portal.js')) ?>" defer></script>
 </body>
 </html>
         <?php

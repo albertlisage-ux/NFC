@@ -2,10 +2,14 @@
 /**
  * Use cases: "One platform, six asset types" with a worked example per type.
  *
+ * The six examples are tabs inside this page: picking a type swaps the panel
+ * below instead of stacking all six into one long scroll. The switching is
+ * driven by the URL fragment, so /use-cases#type-item keeps working, deep links
+ * and the browser back button behave, and no JavaScript is required.
+ *
  * Every block is generated from includes/catalog.php, links to the real tag
  * page seeded for that entry, and derives the public/private lists from the
- * same field definitions the portal uses when rendering. Nothing here is a
- * mockup.
+ * same field definitions the portal uses when rendering.
  */
 
 if (!defined('LINKTEC_SECURE')) {
@@ -50,6 +54,8 @@ $stories = [
 ];
 
 $types = dat_asset_types();
+$catalog = dat_demo_catalog();
+$firstKey = array_key_first($types) !== null ? $types[array_key_first($types)]['key'] : 'pet';
 
 dat_page_start([
     'title' => t('cases.title', 'Use cases') . ' | ' . PORTAL_NAME,
@@ -63,103 +69,121 @@ dat_page_start([
         <div class="shell">
             <p class="eyebrow"><?= e(t('cases.eyebrow', 'Use cases')) ?></p>
             <h1><?= e(t('cases.h1', 'One platform, six asset types')) ?></h1>
-            <p class="section-lead"><?= e(t('cases.lead', 'Each type keeps its own fields and its own fields stay private by default, while every asset shares the same link format. Below is one worked example per type, with the real tag page behind it.')) ?></p>
+            <p class="section-lead"><?= e(t('cases.lead', 'Each type keeps its own fields and its own fields stay private by default, while every asset shares the same link format. Pick a type to see its worked example and the real tag page behind it.')) ?></p>
         </div>
     </section>
 
-    <section class="section section-types-summary">
+    <section class="section section-tabs">
         <div class="shell">
-            <div class="type-grid type-grid-compact">
-                <?php foreach ($types as $type): ?>
-                    <a class="type-tile type-tile-link" href="#type-<?= e($type['key']) ?>">
-                        <span class="type-tile-mark" aria-hidden="true"><?= e($type['emoji']) ?></span>
-                        <h2><?= e($type['label']) ?></h2>
-                        <p><?= e(t('type.' . $type['key'] . '.example', $type['label'])) ?></p>
-                    </a>
-                <?php endforeach; ?>
-            </div>
-        </div>
-    </section>
+            <h2 class="tab-heading"><?= e(t('cases.pick', 'Choose an asset type')) ?></h2>
+            <p class="section-lead"><?= e(t('cases.pick_hint', 'The example below changes in place. Every type ends up at the same kind of link, so only the fields differ.')) ?></p>
 
-    <?php foreach (dat_demo_catalog() as $entry): ?>
-        <?php
-        $type = $entry['type'];
-        $typeMeta = dat_asset_type_meta($type);
-        $story = $stories[$entry['key']] ?? ['situation' => '', 'helps' => ''];
-        $split = dat_demo_field_split($entry);
-        $publicAsset = dat_public_asset(dat_demo_asset_row($entry));
-        $tagUrl = dat_tag_url($entry['public_id']);
-        $payload = dat_nfc_payload(dat_demo_asset_row($entry), $tagUrl);
-        ?>
-        <section class="section example-section" id="type-<?= e($entry['key']) ?>">
-            <div class="shell">
-                <header class="example-head">
-                    <span class="tag-type-mark" aria-hidden="true"><?= e($typeMeta['emoji']) ?></span>
-                    <div>
-                        <p class="eyebrow"><?= e($typeMeta['label']) ?></p>
-                        <h2><?= e($entry['name']) ?></h2>
-                    </div>
-                    <a class="btn btn-ghost btn-sm" href="<?= e($tagUrl) ?>" target="_blank" rel="noopener">
-                        <?= e(t('cases.open_example', 'Open the example')) ?>
-                        <i class="fa-solid fa-arrow-up-right-from-square" aria-hidden="true"></i>
-                    </a>
-                </header>
+            <div class="type-tabs" data-tabs>
+                <nav class="type-tablist" role="tablist" aria-label="<?= e(t('cases.tablist_label', 'Asset types')) ?>">
+                    <?php foreach ($types as $type): ?>
+                        <?php $isFirst = $type['key'] === $firstKey; ?>
+                        <a class="type-tile type-tab"
+                           href="#type-<?= e($type['key']) ?>"
+                           id="tab-type-<?= e($type['key']) ?>"
+                           role="tab"
+                           aria-controls="type-<?= e($type['key']) ?>"
+                           aria-selected="<?= $isFirst ? 'true' : 'false' ?>"
+                           tabindex="<?= $isFirst ? '0' : '-1' ?>">
+                            <span class="type-tile-mark" aria-hidden="true"><?= e($type['emoji']) ?></span>
+                            <span class="type-tab-label"><?= e($type['label']) ?></span>
+                            <span class="type-tab-hint"><?= e(t('type.' . $type['key'] . '.example', $type['label'])) ?></span>
+                        </a>
+                    <?php endforeach; ?>
+                </nav>
 
-                <div class="example-grid">
-                    <div class="example-copy">
-                        <p class="example-situation">
-                            <i class="fa-solid fa-circle-info" aria-hidden="true"></i>
-                            <?= e($story['situation']) ?>
-                        </p>
-                        <p><?= e($story['helps']) ?></p>
+                <div class="type-panels">
+                    <?php foreach ($catalog as $entry): ?>
+                        <?php
+                        $type = $entry['type'];
+                        $typeMeta = dat_asset_type_meta($type);
+                        $story = $stories[$entry['key']] ?? ['situation' => '', 'helps' => ''];
+                        $split = dat_demo_field_split($entry);
+                        $publicAsset = dat_public_asset(dat_demo_asset_row($entry));
+                        $tagUrl = dat_tag_url($entry['public_id']);
+                        $payload = dat_nfc_payload(dat_demo_asset_row($entry), $tagUrl);
+                        ?>
+                        <article class="type-panel"
+                                 id="type-<?= e($entry['key']) ?>"
+                                 role="tabpanel"
+                                 aria-labelledby="tab-type-<?= e($entry['key']) ?>"
+                                 tabindex="0">
+                            <header class="example-head">
+                                <span class="tag-type-mark" aria-hidden="true"><?= e($typeMeta['emoji']) ?></span>
+                                <div>
+                                    <p class="eyebrow"><?= e($typeMeta['label']) ?></p>
+                                    <h3><?= e($entry['name']) ?></h3>
+                                </div>
+                                <a class="btn btn-ghost btn-sm" href="<?= e($tagUrl) ?>" target="_blank" rel="noopener">
+                                    <?= e(t('cases.open_example', 'Open the example')) ?>
+                                    <i class="fa-solid fa-arrow-up-right-from-square" aria-hidden="true"></i>
+                                </a>
+                            </header>
 
-                        <div class="example-lists">
-                            <div class="example-list example-list-public">
-                                <h3><i class="fa-solid fa-eye" aria-hidden="true"></i><?= e(t('cases.public_list', 'A finder sees')) ?></h3>
-                                <ul>
-                                    <li><?= e($entry['name']) ?></li>
-                                    <li><?= e($typeMeta['label']) ?></li>
-                                    <?php foreach ($split['public'] as $label => $value): ?>
-                                        <li><strong><?= e($label) ?>:</strong> <?= e($value) ?></li>
-                                    <?php endforeach; ?>
-                                </ul>
+                            <div class="example-grid">
+                                <div class="example-copy">
+                                    <p class="example-situation">
+                                        <i class="fa-solid fa-circle-info" aria-hidden="true"></i>
+                                        <?= e($story['situation']) ?>
+                                    </p>
+                                    <p><?= e($story['helps']) ?></p>
+
+                                    <div class="example-lists">
+                                        <div class="example-list example-list-public">
+                                            <h4><i class="fa-solid fa-eye" aria-hidden="true"></i><?= e(t('cases.public_list', 'A finder sees')) ?></h4>
+                                            <ul>
+                                                <li><?= e($entry['name']) ?></li>
+                                                <li><?= e($typeMeta['label']) ?></li>
+                                                <?php foreach ($split['public'] as $label => $value): ?>
+                                                    <li><strong><?= e($label) ?>:</strong> <?= e($value) ?></li>
+                                                <?php endforeach; ?>
+                                            </ul>
+                                        </div>
+                                        <div class="example-list example-list-private">
+                                            <h4><i class="fa-solid fa-lock" aria-hidden="true"></i><?= e(t('cases.private_list', 'Stored, never published')) ?></h4>
+                                            <?php if ($split['private']): ?>
+                                                <ul>
+                                                    <?php foreach ($split['private'] as $label => $value): ?>
+                                                        <li><strong><?= e($label) ?>:</strong> <?= e($value) ?></li>
+                                                    <?php endforeach; ?>
+                                                </ul>
+                                            <?php else: ?>
+                                                <ul>
+                                                    <li><?= e(t('cases.no_private', 'This type has no private fields, only your account data.')) ?></li>
+                                                </ul>
+                                            <?php endif; ?>
+                                        </div>
+                                    </div>
+
+                                    <details class="faq-item">
+                                        <summary><?= e(t('cases.payload_title', 'Text written to the NFC chip')) ?></summary>
+                                        <pre class="nfc-sample"><?= e($payload) ?></pre>
+                                        <p class="form-hint"><?= e(sprintf(t('cases.payload_hint', '%d bytes, the link is what makes the tag work.'), dat_nfc_payload_bytes($payload))) ?></p>
+                                    </details>
+
+                                    <p class="example-url"><code><?= e($tagUrl) ?></code></p>
+                                </div>
+
+                                <div class="example-preview">
+                                    <div class="tag-card-frame">
+                                        <?php dat_tag_card($publicAsset, [], ['compact' => true, 'heading_level' => 4]); ?>
+                                    </div>
+                                </div>
                             </div>
-                            <div class="example-list example-list-private">
-                                <h3><i class="fa-solid fa-lock" aria-hidden="true"></i><?= e(t('cases.private_list', 'Stored, never published')) ?></h3>
-                                <?php if ($split['private']): ?>
-                                    <ul>
-                                        <?php foreach ($split['private'] as $label => $value): ?>
-                                            <li><strong><?= e($label) ?>:</strong> <?= e($value) ?></li>
-                                        <?php endforeach; ?>
-                                    </ul>
-                                <?php else: ?>
-                                    <ul>
-                                        <li><?= e(t('cases.no_private', 'This type has no private fields, only your account data.')) ?></li>
-                                    </ul>
-                                <?php endif; ?>
-                            </div>
-                        </div>
-
-                        <details class="faq-item">
-                            <summary><?= e(t('cases.payload_title', 'Text written to the NFC chip')) ?></summary>
-                            <pre class="nfc-sample"><?= e($payload) ?></pre>
-                            <p class="form-hint"><?= e(sprintf(t('cases.payload_hint', '%d bytes, the link is what makes the tag work.'), dat_nfc_payload_bytes($payload))) ?></p>
-                        </details>
-
-                        <p class="example-url"><code><?= e($tagUrl) ?></code></p>
-                    </div>
-
-                    <div class="example-preview">
-                        <div class="tag-card-frame">
-                            <?php dat_tag_card($publicAsset, [], ['compact' => true, 'heading_level' => 3]); ?>
-                        </div>
-                    </div>
+                        </article>
+                    <?php endforeach; ?>
                 </div>
             </div>
-        </section>
-    <?php endforeach; ?>
 
-    <section class="section">
+            <p class="tabs-fallback"><?= e(t('cases.fallback', 'All six examples are on this page, one panel at a time. Pick another type above to switch.')) ?></p>
+        </div>
+    </section>
+
+    <section class="section section-split">
         <div class="shell">
             <h2><?= e(t('cases.shared_title', 'What all six have in common')) ?></h2>
             <div class="split-grid">
@@ -206,7 +230,7 @@ dat_page_start([
                 <p><?= e(t('cases.cta_body', 'Create an account and add the one that worries you most.')) ?></p>
             </div>
             <div class="cta-band-actions">
-                <a class="btn btn-primary btn-lg" href="<?= e(dat_url('account/register.php')) ?>"><?= e(t('nav.register', 'Create account')) ?></a>
+                <a class="btn btn-primary btn-lg" href="<?= e(dat_url('start')) ?>"><?= e(t('start.title', 'Start with one tag')) ?></a>
                 <a class="btn btn-outline-light btn-lg" href="<?= e(dat_url('how-it-works')) ?>"><?= e(t('nav.how', 'How it works')) ?></a>
             </div>
         </div>
