@@ -1,7 +1,9 @@
 <?php
 /**
- * Creates a demo owner and one demo asset with the fixed public ID DEMTAG24,
- * so the QR code on the home page really opens a working tag page.
+ * Creates the demo owner and one worked example per asset type, using the
+ * fixed public IDs from includes/catalog.php. The example blocks on the
+ * use-cases page link to these live tag pages, so the illustrations and the
+ * running portal always show the same data.
  *
  *   php scripts/seed-demo.php
  *
@@ -15,6 +17,7 @@ if (!defined('LINKTEC_SECURE')) {
 require_once __DIR__ . '/../config/db.php';
 require_once __DIR__ . '/../includes/assets.php';
 require_once __DIR__ . '/../includes/nfc.php';
+require_once __DIR__ . '/../includes/catalog.php';
 
 if (PHP_SAPI !== 'cli') {
     http_response_code(403);
@@ -23,7 +26,6 @@ if (PHP_SAPI !== 'cli') {
 
 const DEMO_EMAIL = 'demo@example.com';
 const DEMO_PASSWORD = 'DemoTag2026!';
-const DEMO_PUBLIC_ID = 'DEMTAG24';
 
 if (dat_db() === null) {
     fwrite(STDERR, 'Cannot connect to ' . DB_NAME . ' at ' . DB_HOST . PHP_EOL);
@@ -43,36 +45,69 @@ if ($user === null) {
     echo 'Created demo user ' . DEMO_EMAIL . PHP_EOL;
 }
 
-$asset = dat_one('SELECT * FROM ' . dat_table('assets') . ' WHERE public_id = ? LIMIT 1', [DEMO_PUBLIC_ID]);
-if ($asset === null) {
-    $assetId = dat_uuid();
-    $now = dat_now();
+$created = 0;
+$reused = 0;
+
+foreach (dat_demo_catalog() as $entry) {
+    $existing = dat_one(
+        'SELECT * FROM ' . dat_table('assets') . ' WHERE public_id = ? LIMIT 1',
+        [$entry['public_id']]
+    );
+
+    if ($existing === null) {
+        $assetId = dat_uuid();
+        $now = dat_now();
+        dat_exec(
+            'INSERT INTO ' . dat_table('assets') . '
+                (id, public_id, owner_id, type, name, description, status, metadata_json, created_at, updated_at)
+             VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)',
+            [
+                $assetId,
+                $entry['public_id'],
+                $user['id'],
+                $entry['type'],
+                $entry['name'],
+                $entry['description'],
+                DAT_ASSET_STATUS_ACTIVE,
+                json_encode(
+                    dat_sanitize_metadata($entry['type'], $entry['metadata']),
+                    JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES
+                ),
+                $now,
+                $now,
+            ]
+        );
+        dat_create_tag($assetId, DAT_TAG_TYPE_QR, dat_asset_type_label($entry['type']) . ' QR');
+        dat_create_tag($assetId, DAT_TAG_TYPE_NFC, dat_asset_type_label($entry['type']) . ' NFC');
+        $created++;
+        echo 'Created demo asset ' . $entry['public_id'] . ' (' . $entry['name'] . ')' . PHP_EOL;
+        continue;
+    }
+
+    // Keep the illustration in step with the catalog without touching the ID.
+    $reused++;
     dat_exec(
-        'INSERT INTO ' . dat_table('assets') . '
-            (id, public_id, owner_id, type, name, description, status, metadata_json, created_at, updated_at)
-         VALUES (?, ?, ?, ?, ?, ?, 1, ?, ?, ?)',
+        'UPDATE ' . dat_table('assets') . '
+            SET name = ?, description = ?, type = ?, metadata_json = ?, updated_at = ?
+          WHERE id = ?',
         [
-            $assetId,
-            DEMO_PUBLIC_ID,
-            $user['id'],
-            DAT_ASSET_TYPE_PET,
-            'Lucky',
-            'Friendly dog, chipped, speaks German and English. If you found him, a message is enough.',
-            json_encode([
-                'animal' => 'Dog',
-                'breed' => 'Golden Retriever',
-                'color' => 'Golden',
-                'gender' => 'Male',
-            ], JSON_UNESCAPED_UNICODE),
-            $now,
-            $now,
+            $entry['name'],
+            $entry['description'],
+            $entry['type'],
+            json_encode(
+                dat_sanitize_metadata($entry['type'], $entry['metadata']),
+                JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES
+            ),
+            dat_now(),
+            $existing['id'],
         ]
     );
-    dat_create_tag($assetId, DAT_TAG_TYPE_QR, 'Collar QR');
-    dat_create_tag($assetId, DAT_TAG_TYPE_NFC, 'Collar NFC');
-    $asset = dat_one('SELECT * FROM ' . dat_table('assets') . ' WHERE public_id = ? LIMIT 1', [DEMO_PUBLIC_ID]);
-    echo 'Created demo asset ' . DEMO_PUBLIC_ID . PHP_EOL;
+    dat_sync_default_tags($existing['id'], $user['id']);
 }
 
+echo PHP_EOL . 'Created: ' . $created . ', refreshed: ' . $reused . PHP_EOL;
 echo 'Login: ' . DEMO_EMAIL . ' / ' . DEMO_PASSWORD . PHP_EOL;
-echo 'Tag page: ' . dat_tag_url($asset['public_id']) . PHP_EOL;
+echo 'Tag pages:' . PHP_EOL;
+foreach (dat_demo_catalog() as $entry) {
+    echo '  ' . dat_asset_type_label($entry['type']) . ': ' . dat_tag_url($entry['public_id']) . PHP_EOL;
+}

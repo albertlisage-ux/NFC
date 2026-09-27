@@ -14,6 +14,7 @@ $_SERVER['HTTP_HOST'] = $_SERVER['HTTP_HOST'] ?? 'localhost';
 $_SERVER['DOCUMENT_ROOT'] = $_SERVER['DOCUMENT_ROOT'] ?? __DIR__ . '/..';
 
 require_once __DIR__ . '/../includes/bootstrap.php';
+require_once __DIR__ . '/../includes/catalog.php';
 
 $failures = 0;
 $checks = 0;
@@ -167,11 +168,46 @@ echo PHP_EOL . 'URLs' . PHP_EOL;
 check('tag URL uses the stable pattern', dat_tag_url('DEMTAG24') === dat_base_url() . '/t/DEMTAG24', dat_tag_url('DEMTAG24'));
 check('assets resolve to the asset directory', strpos(dat_asset_url('css/portal.css'), '/assets/css/portal.css') !== false);
 
+/* ---------------------------------------------------- worked examples -- */
+
+echo PHP_EOL . 'Worked examples' . PHP_EOL;
+
+$catalog = dat_demo_catalog();
+check('catalog has six entries', count($catalog) === 6, (string) count($catalog));
+check('catalog covers six distinct types', count(array_unique(array_column($catalog, 'type'))) === 6);
+check('catalog type IDs are known', array_diff(array_column($catalog, 'type'), dat_asset_type_ids()) === []);
+
+$demoIds = array_column($catalog, 'public_id');
+check('demo public IDs are unique', count(array_unique($demoIds)) === count($demoIds));
+check('demo public IDs are valid', count(array_filter($demoIds, 'dat_is_valid_public_id')) === count($demoIds), implode(',', $demoIds));
+
+$leaks = [];
+foreach ($catalog as $entry) {
+    $public = dat_public_asset(dat_demo_asset_row($entry));
+    $split = dat_demo_field_split($entry);
+    check('example publishes something: ' . $entry['key'], $split['public'] !== []);
+    foreach ($split['private'] as $value) {
+        if (in_array($value, $public['metadata'], true)) {
+            $leaks[] = $entry['key'] . ':' . $value;
+        }
+    }
+}
+check('no private example value reaches the public projection', $leaks === [], implode(', ', $leaks));
+
 /* ------------------------------------------------------ static files --- */
 
 echo PHP_EOL . 'Static files' . PHP_EOL;
 
-foreach (['assets/css/portal.css', 'assets/js/portal.js', 'assets/img/favicon.svg', 'config/schema.sql'] as $file) {
+foreach ([
+    'assets/css/portal.css',
+    'assets/js/portal.js',
+    'assets/img/favicon.svg',
+    'config/schema.sql',
+    'index.php',
+    'how-it-works.php',
+    'use-cases.php',
+    'privacy.php',
+] as $file) {
     check('exists: ' . $file, is_file(DAT_APP_ROOT . '/' . $file));
 }
 

@@ -62,9 +62,11 @@ mkdirSync(outDir, { recursive: true });
 const targets = [
   { path: '/', name: 'home', full: false },
   { path: '/', name: 'home-full', full: true, skipMobile: true },
+  { path: '/how-it-works', name: 'how-it-works', full: true },
+  { path: '/use-cases', name: 'use-cases', full: true },
+  { path: '/privacy', name: 'privacy', full: true },
   { path: '/account/login.php', name: 'login' },
   { path: '/account/register.php', name: 'register' },
-  { path: '/docs/privacy.php', name: 'privacy' },
   { path: '/docs/imprint.php', name: 'imprint' },
   ...extraPaths.map((path) => ({ path, name: path.replace(/[^a-z0-9]+/gi, '-').replace(/^-|-$/g, '') })),
 ];

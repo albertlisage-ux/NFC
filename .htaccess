@@ -6,6 +6,9 @@ DirectoryIndex index.php
 <IfModule mod_rewrite.c>
     RewriteEngine On
     RewriteRule ^t/([A-Za-z0-9]{4,12})/?$ t/index.php?id=$1 [L,QSA]
+    RewriteRule ^how-it-works/?$ how-it-works.php [L]
+    RewriteRule ^use-cases/?$ use-cases.php [L]
+    RewriteRule ^privacy/?$ privacy.php [L]
 </IfModule>
 
 <FilesMatch "^\.env">

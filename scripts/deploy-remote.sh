@@ -11,6 +11,10 @@
 # The SFTP password is read from .vscode/sftp.json, or from the macOS Keychain
 # when the config does not carry one. Keep .vscode/sftp.json local; it is
 # ignored by Git.
+#
+# The production environment file lives in .deploy/env (also ignored by Git) and
+# is uploaded as .env. Keeping it out of the working tree means a local preview
+# never picks up the production base URL.
 set -euo pipefail
 
 ROOT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
@@ -86,6 +90,9 @@ exclude_args=(
     --exclude "docker/***"
     --exclude "logs/***"
     --exclude ".env.example"
+    --exclude ".env"
+    --exclude ".deploy"
+    --exclude ".deploy/***"
     --exclude "storage/uploads/***"
     --exclude "scripts/screenshot.mjs"
     --exclude "scripts/ui-check.mjs"
@@ -120,11 +127,19 @@ rsync -az --human-readable --progress \
     -e "ssh -p $port -o StrictHostKeyChecking=accept-new -o NumberOfPasswordPrompts=1" \
     "$ROOT_DIR/" "$username@$host:$remote_path/"
 
+# Upload the environment file last, so it always lands as <remote>/.env.
+if [ -f "$ROOT_DIR/.deploy/env" ]; then
+    rsync -az --human-readable \
+        -e "ssh -p $port -o StrictHostKeyChecking=accept-new -o NumberOfPasswordPrompts=1" \
+        "$ROOT_DIR/.deploy/env" "$username@$host:$remote_path/.env"
+    chmod 640 "$ROOT_DIR/.deploy/env" 2>/dev/null || true
+else
+    printf 'WARNING: .deploy/env is missing; the server keeps its current .env.\n'
+fi
+
 printf 'Upload complete.\n'
 
-# Reminder: the URL is defined by PORTAL_BASE_URL in the uploaded .env file.
-if [ -f "$ROOT_DIR/.env" ]; then
-    printf 'Configured base URL: %s\n' "$(grep -E '^PORTAL_BASE_URL=' "$ROOT_DIR/.env" | cut -d= -f2- || true)"
-else
-    printf 'WARNING: no local .env file was uploaded; the portal will auto-detect its URL.\n'
+# Reminder: the URL is defined by PORTAL_BASE_URL in .deploy/env.
+if [ -f "$ROOT_DIR/.deploy/env" ]; then
+    printf 'Configured base URL: %s\n' "$(grep -E '^PORTAL_BASE_URL=' "$ROOT_DIR/.deploy/env" | cut -d= -f2- || true)"
 fi

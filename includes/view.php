@@ -265,9 +265,9 @@ if (!function_exists('dat_page_start')) {
             </a>
 
             <nav class="nav-links" aria-label="<?= e(t('nav.primary', 'Main navigation')) ?>">
-                <a href="<?= e(dat_url('index.php')) ?>#how-it-works"><?= e(t('nav.how', 'How it works')) ?></a>
-                <a href="<?= e(dat_url('index.php')) ?>#use-cases"><?= e(t('nav.usecases', 'Use cases')) ?></a>
-                <a href="<?= e(dat_url('index.php')) ?>#privacy"><?= e(t('nav.privacy', 'Privacy')) ?></a>
+                <a href="<?= e(dat_url('how-it-works')) ?>"><?= e(t('nav.how', 'How it works')) ?></a>
+                <a href="<?= e(dat_url('use-cases')) ?>"><?= e(t('nav.usecases', 'Use cases')) ?></a>
+                <a href="<?= e(dat_url('privacy')) ?>"><?= e(t('nav.privacy', 'Privacy')) ?></a>
             </nav>
 
             <div class="nav-actions">
@@ -297,9 +297,9 @@ if (!function_exists('dat_page_start')) {
             </button>
         </div>
         <div class="nav-mobile" id="nav-mobile" hidden>
-            <a href="<?= e(dat_url('index.php')) ?>#how-it-works"><?= e(t('nav.how', 'How it works')) ?></a>
-            <a href="<?= e(dat_url('index.php')) ?>#use-cases"><?= e(t('nav.usecases', 'Use cases')) ?></a>
-            <a href="<?= e(dat_url('index.php')) ?>#privacy"><?= e(t('nav.privacy', 'Privacy')) ?></a>
+            <a href="<?= e(dat_url('how-it-works')) ?>"><?= e(t('nav.how', 'How it works')) ?></a>
+            <a href="<?= e(dat_url('use-cases')) ?>"><?= e(t('nav.usecases', 'Use cases')) ?></a>
+            <a href="<?= e(dat_url('privacy')) ?>"><?= e(t('nav.privacy', 'Privacy')) ?></a>
             <?php if ($user !== null): ?>
                 <a href="<?= e(dat_url('dashboard/index.php')) ?>"><?= e(t('nav.dashboard', 'Dashboard')) ?></a>
                 <a href="<?= e(dat_url('dashboard/messages.php')) ?>"><?= e(t('nav.messages', 'Messages')) ?></a>
@@ -331,9 +331,9 @@ if (!function_exists('dat_page_end')) {
                 </div>
             </div>
             <nav aria-label="<?= e(t('footer.legal', 'Legal')) ?>">
-                <a href="<?= e(dat_url('docs/privacy.php')) ?>"><?= e(t('footer.privacy', 'Privacy')) ?></a>
+                <a href="<?= e(dat_url('privacy')) ?>"><?= e(t('footer.privacy', 'Privacy')) ?></a>
                 <a href="<?= e(dat_url('docs/imprint.php')) ?>"><?= e(t('footer.imprint', 'Imprint')) ?></a>
-                <a href="<?= e(dat_url('index.php')) ?>#how-it-works"><?= e(t('nav.how', 'How it works')) ?></a>
+                <a href="<?= e(dat_url('how-it-works')) ?>"><?= e(t('nav.how', 'How it works')) ?></a>
             </nav>
         </div>
         <div class="shell footer-note">

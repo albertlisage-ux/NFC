@@ -35,6 +35,19 @@ if (preg_match('#^/t/([A-Za-z0-9]{4,12})/?$#', $path, $matches)) {
     return true;
 }
 
+// Clean URLs for the content pages.
+$cleanRoutes = [
+    '/how-it-works' => 'how-it-works.php',
+    '/use-cases' => 'use-cases.php',
+    '/privacy' => 'privacy.php',
+];
+$normalised = rtrim($path, '/');
+if (isset($cleanRoutes[$normalised])) {
+    $_SERVER['SCRIPT_NAME'] = '/' . $cleanRoutes[$normalised];
+    require $root . '/' . $cleanRoutes[$normalised];
+    return true;
+}
+
 if ($path === '/') {
     $_SERVER['SCRIPT_NAME'] = '/index.php';
     require $root . '/index.php';

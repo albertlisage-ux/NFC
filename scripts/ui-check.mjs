@@ -88,9 +88,11 @@ if (diagnosePath) {
 }
 const pages = [
   { path: '/', name: 'home' },
+  { path: '/how-it-works', name: 'how-it-works' },
+  { path: '/use-cases', name: 'use-cases' },
+  { path: '/privacy', name: 'privacy' },
   { path: '/account/login.php', name: 'login' },
   { path: '/account/register.php', name: 'register' },
-  { path: '/docs/privacy.php', name: 'privacy' },
 ];
 
 const viewports = [

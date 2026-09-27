@@ -64,6 +64,7 @@ if (!function_exists('dat_asset_types')) {
                     ['key' => 'breed', 'label' => t('field.breed', 'Breed'), 'public' => true],
                     ['key' => 'color', 'label' => t('field.color', 'Colour'), 'public' => true],
                     ['key' => 'gender', 'label' => t('field.gender', 'Gender'), 'public' => true],
+                    ['key' => 'microchip', 'label' => t('field.microchip', 'Microchip number'), 'public' => false],
                 ],
             ],
             DAT_ASSET_TYPE_BICYCLE => [
