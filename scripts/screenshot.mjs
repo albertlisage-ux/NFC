@@ -65,6 +65,8 @@ const targets = [
   { path: '/how-it-works', name: 'how-it-works', full: true },
   { path: '/use-cases', name: 'use-cases', full: true },
   { path: '/privacy', name: 'privacy', full: true },
+  { path: '/start', name: 'start', full: true },
+  { path: '/write-a-tag', name: 'write-a-tag', full: true },
   { path: '/account/login.php', name: 'login' },
   { path: '/account/register.php', name: 'register' },
   { path: '/docs/imprint.php', name: 'imprint' },

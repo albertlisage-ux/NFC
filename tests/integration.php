@@ -126,6 +126,15 @@ function integration_schema(): array
             asset_id TEXT,
             created_at TEXT NOT NULL
         )',
+        'CREATE TABLE dat_guest_sessions (
+            id TEXT PRIMARY KEY,
+            user_id TEXT NOT NULL UNIQUE,
+            ip_hash TEXT,
+            created_at TEXT NOT NULL,
+            expires_at TEXT NOT NULL,
+            claimed_at TEXT,
+            FOREIGN KEY (user_id) REFERENCES dat_users (id) ON DELETE CASCADE
+        )',
         'CREATE TABLE dat_login_logs (
             id INTEGER PRIMARY KEY AUTOINCREMENT,
             user_id TEXT,
@@ -388,6 +397,51 @@ check('but the tag page hides the asset', dat_asset_is_public($deleted['status']
 check('deleted rows disappear from the dashboard', count(dat_assets_for_owner($owner['id'])) === 1);
 check('another account cannot delete an asset', dat_soft_delete_asset($vehicle['id'], $second['id']) === true); // no-op, row untouched
 check('the vehicle is still active', (int) dat_asset_for_owner($vehicle['id'], $owner['id'])['status'] === DAT_ASSET_STATUS_ACTIVE);
+
+/* ---------------------------------------------------- guest sessions --- */
+
+echo PHP_EOL . 'Guest sessions' . PHP_EOL;
+
+// A fresh visitor: no session, so no guest account yet.
+unset($_SESSION['dat_guest_user_id']);
+check('no guest user before starting', dat_guest_user() === null);
+
+$guestSession = dat_create_guest_session();
+check('guest session was created', $guestSession['success'] === true);
+$guest = $guestSession['user'];
+check('guest account uses the reserved domain', dat_is_guest_user($guest));
+check('guest account cannot sign in', dat_authenticate($guest['email'], 'anything')['success'] === false);
+check('guest session row exists', dat_one('SELECT id FROM dat_guest_sessions WHERE user_id = ?', [$guest['id']]) !== null);
+check('guest session can create one tag', dat_guest_can_create() === true);
+
+$guestAsset = dat_create_asset($guest['id'], DAT_ASSET_TYPE_ITEM, 'Guest keys', 'Keys found in the park.', ['category' => 'Keys']);
+check('guest asset was created', $guestAsset !== null && dat_is_valid_public_id($guestAsset['public_id']));
+check('guest asset is publicly reachable', dat_asset_by_public_id($guestAsset['public_id']) !== null);
+check('guest tag has QR and NFC tags', count(dat_asset_tags($guestAsset['id'])) === 2);
+check('guest cannot create a second tag', dat_guest_can_create() === false);
+
+$guestFinder = dat_create_finder_message($guestAsset, 'I found these keys by the fountain.');
+check('a finder can message a guest asset', $guestFinder['success'] === true);
+
+// Claiming: the visitor registers and the tag moves over.
+$newOwner = dat_register_user('claimer@example.com', 'Str0ngPassword', 'Str0ngPassword', 'Claimer')['user'];
+$claimed = dat_claim_guest_assets($newOwner['id']);
+check('guest asset was transferred on registration', $claimed === 1, (string) $claimed);
+check('the transferred tag sits in the new account', dat_asset_for_owner($guestAsset['id'], $newOwner['id']) !== null);
+check('the transferred tag keeps its public ID', dat_asset_for_owner($guestAsset['id'], $newOwner['id'])['public_id'] === $guestAsset['public_id']);
+check('the guest account is gone', dat_user_by_id($guest['id']) === null);
+check('the guest session row is gone too', dat_one('SELECT id FROM dat_guest_sessions WHERE user_id = ?', [$guest['id']]) === null);
+check('messages survived the transfer', dat_unread_message_count($newOwner['id']) === 1);
+check('the guest session is cleared from the session', dat_guest_user() === null);
+
+// Expiry: an unclaimed guest account is removed with its assets.
+$stale = dat_create_guest_session();
+$staleUser = $stale['user'];
+dat_create_asset($staleUser['id'], DAT_ASSET_TYPE_ITEM, 'Abandoned tag', '', []);
+dat_exec('UPDATE dat_guest_sessions SET expires_at = ? WHERE user_id = ?', ['2000-01-01 00:00:00', $staleUser['id']]);
+check('expired guest sessions are purged', dat_purge_guest_sessions() >= 1);
+check('purged guest account is gone', dat_user_by_id($staleUser['id']) === null);
+check('purged guest assets are gone', dat_asset_counts($staleUser['id'])['total'] === 0);
 
 echo PHP_EOL . ($failures === 0
     ? "All {$checks} checks passed." . PHP_EOL

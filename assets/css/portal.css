@@ -345,7 +345,7 @@ code, kbd, samp {
 .split-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 44px; align-items: start; }
 .split-grid > * { min-width: 0; }
 
-.explore-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 18px; }
+.explore-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 18px; }
 .explore-card {
   background: var(--surface); border: 1px solid var(--line); border-radius: var(--r-card);
   padding: 24px; display: flex; flex-direction: column; align-items: flex-start;
@@ -364,6 +364,14 @@ code, kbd, samp {
 
 .steps-detailed { gap: 34px; }
 .steps-detailed h2 { font-size: 1.2rem; }
+
+/* Numbered step list used by the start and guide pages. */
+.step-list { list-style: none; margin: 0; padding: 0; display: grid; gap: 18px; }
+.step-list li { display: flex; gap: 14px; align-items: flex-start; }
+.step-list .step-index { flex: 0 0 auto; margin-bottom: 0; }
+.step-list strong { display: block; margin-bottom: 2px; }
+.step-list p { margin: 0; font-size: .93rem; }
+
 .tick-list { list-style: none; margin: 12px 0 0; padding: 0; display: grid; gap: 7px; }
 .tick-list li { position: relative; padding-left: 22px; font-size: .9rem; color: var(--ink-soft); }
 .tick-list li::before {
@@ -381,6 +389,8 @@ code, kbd, samp {
   background: var(--surface); border: 1px solid var(--line); border-radius: var(--r-control);
   padding: 12px; margin: 0; color: var(--ink-soft);
 }
+
+.qr-preview-lg { width: 100%; max-width: 260px; height: auto; aspect-ratio: 1; margin-bottom: 10px; }
 
 .status-flow { display: flex; align-items: center; flex-wrap: wrap; gap: 10px; margin: 14px 0; }
 .status-flow i { color: var(--muted); font-size: .8rem; }

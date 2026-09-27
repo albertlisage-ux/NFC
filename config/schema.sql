@@ -91,6 +91,22 @@ CREATE TABLE IF NOT EXISTS dat_message_rate (
   KEY idx_dat_message_rate_lookup (ip_hash, asset_id, created_at)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
+-- Guest sessions let a visitor create one tag before registering. The assets
+-- belong to a temporary guest account which is handed over to the real account
+-- on registration, and removed after the retention period otherwise.
+CREATE TABLE IF NOT EXISTS dat_guest_sessions (
+  id         CHAR(36)     NOT NULL,
+  user_id    CHAR(36)     NOT NULL,
+  ip_hash    CHAR(64)         NULL,
+  created_at DATETIME     NOT NULL,
+  expires_at DATETIME     NOT NULL,
+  claimed_at DATETIME         NULL,
+  PRIMARY KEY (id),
+  UNIQUE KEY uniq_dat_guest_sessions_user (user_id),
+  KEY idx_dat_guest_sessions_ip (ip_hash, created_at),
+  CONSTRAINT fk_dat_guest_sessions_user FOREIGN KEY (user_id) REFERENCES dat_users (id) ON DELETE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
 CREATE TABLE IF NOT EXISTS dat_login_logs (
   id         BIGINT UNSIGNED NOT NULL AUTO_INCREMENT,
   user_id    CHAR(36)            NULL,

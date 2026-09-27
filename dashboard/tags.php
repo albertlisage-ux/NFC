@@ -130,6 +130,12 @@ dat_page_start([
             <li><?= e(t('tag.nfc_step2', 'Create a new text or URL record and paste the payload above.')) ?></li>
             <li><?= e(t('tag.nfc_step3', 'Hold the phone to the chip, then test it once before attaching the tag.')) ?></li>
         </ol>
+        <div class="btn-group">
+            <a class="btn btn-ghost btn-sm" href="<?= e(dat_url('write-a-tag')) ?>">
+                <?= e(t('tag.nfc_guide', 'Open the writing guide (NFC Tools and others)')) ?>
+                <i class="fa-solid fa-arrow-right" aria-hidden="true"></i>
+            </a>
+        </div>
     </div>
 
     <div class="panel">

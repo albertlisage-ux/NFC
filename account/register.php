@@ -37,6 +37,13 @@ if (($_SERVER['REQUEST_METHOD'] ?? '') === 'POST') {
         $result = dat_register_user($email, $password, $confirm, $displayName);
         if ($result['success']) {
             dat_login_session($result['user']);
+            // A tag created in a guest session moves into the new account.
+            $claimed = dat_claim_guest_assets($result['user']['id']);
+            if ($claimed > 0) {
+                dat_flash_set('success', t('register.claimed', 'Welcome. The tag from your guest session is now in your account.'));
+                header('Location: ' . dat_url('dashboard/index.php'));
+                exit;
+            }
             dat_flash_set('success', t('register.welcome', 'Welcome. Your account is ready, add your first asset.'));
             header('Location: ' . dat_url('dashboard/assets-new.php'));
             exit;
@@ -116,6 +123,10 @@ dat_page_start([
             <p class="auth-switch">
                 <?= e(t('register.have_account', 'Already have an account?')) ?>
                 <a href="<?= e(dat_url('account/login.php')) ?>"><?= e(t('nav.login', 'Log in')) ?></a>
+            </p>
+            <p class="auth-switch">
+                <?= e(t('register.guest_prompt', 'Want to try it first?')) ?>
+                <a href="<?= e(dat_url('start')) ?>"><?= e(t('register.guest_link', 'Create one guest tag without an account')) ?></a>
             </p>
         </div>
     </div>

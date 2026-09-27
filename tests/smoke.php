@@ -207,9 +207,24 @@ foreach ([
     'how-it-works.php',
     'use-cases.php',
     'privacy.php',
+    'start.php',
+    'write-a-tag.php',
 ] as $file) {
     check('exists: ' . $file, is_file(DAT_APP_ROOT . '/' . $file));
 }
+
+/* -------------------------------------------------- translation pairs -- */
+
+echo PHP_EOL . 'Translations' . PHP_EOL;
+
+$en = (array) require DAT_APP_ROOT . '/includes/lang/en.php';
+$de = (array) require DAT_APP_ROOT . '/includes/lang/de.php';
+$missingInDe = array_diff(array_keys($en), array_keys($de));
+$missingInEn = array_diff(array_keys($de), array_keys($en));
+
+check('German covers every English key', $missingInDe === [], implode(', ', array_slice($missingInDe, 0, 8)));
+check('German adds no unknown keys', $missingInEn === [], implode(', ', array_slice($missingInEn, 0, 8)));
+check('no empty translations', array_filter($de, static fn ($value) => trim((string) $value) === '') === []);
 
 /* ------------------------------------------------------ optional HTTP -- */
 

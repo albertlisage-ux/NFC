@@ -91,6 +91,8 @@ const pages = [
   { path: '/how-it-works', name: 'how-it-works' },
   { path: '/use-cases', name: 'use-cases' },
   { path: '/privacy', name: 'privacy' },
+  { path: '/start', name: 'start' },
+  { path: '/write-a-tag', name: 'write-a-tag' },
   { path: '/account/login.php', name: 'login' },
   { path: '/account/register.php', name: 'register' },
 ];

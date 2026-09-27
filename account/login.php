@@ -36,6 +36,10 @@ if (($_SERVER['REQUEST_METHOD'] ?? '') === 'POST') {
 
         if ($result['success']) {
             dat_login_session($result['user']);
+            // Pick up anything that was created as a guest in this session.
+            if (dat_claim_guest_assets($result['user']['id']) > 0) {
+                dat_flash_set('success', t('login.claimed', 'The tag from your guest session is now in your account.'));
+            }
             $target = $next !== null ? $next : dat_url('dashboard/index.php');
             header('Location: ' . $target);
             exit;

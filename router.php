@@ -40,6 +40,8 @@ $cleanRoutes = [
     '/how-it-works' => 'how-it-works.php',
     '/use-cases' => 'use-cases.php',
     '/privacy' => 'privacy.php',
+    '/start' => 'start.php',
+    '/write-a-tag' => 'write-a-tag.php',
 ];
 $normalised = rtrim($path, '/');
 if (isset($cleanRoutes[$normalised])) {

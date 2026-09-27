@@ -267,6 +267,7 @@ if (!function_exists('dat_page_start')) {
             <nav class="nav-links" aria-label="<?= e(t('nav.primary', 'Main navigation')) ?>">
                 <a href="<?= e(dat_url('how-it-works')) ?>"><?= e(t('nav.how', 'How it works')) ?></a>
                 <a href="<?= e(dat_url('use-cases')) ?>"><?= e(t('nav.usecases', 'Use cases')) ?></a>
+                <a href="<?= e(dat_url('write-a-tag')) ?>"><?= e(t('nav.write', 'Write a tag')) ?></a>
                 <a href="<?= e(dat_url('privacy')) ?>"><?= e(t('nav.privacy', 'Privacy')) ?></a>
             </nav>
 
@@ -287,7 +288,7 @@ if (!function_exists('dat_page_start')) {
                     </form>
                 <?php else: ?>
                     <a class="btn btn-ghost" href="<?= e(dat_url('account/login.php')) ?>"><?= e(t('nav.login', 'Log in')) ?></a>
-                    <a class="btn btn-primary" href="<?= e(dat_url('account/register.php')) ?>"><?= e(t('nav.register', 'Create account')) ?></a>
+                    <a class="btn btn-primary" href="<?= e(dat_url('start')) ?>"><?= e(t('start.title', 'Start with one tag')) ?></a>
                 <?php endif; ?>
             </div>
 
@@ -299,13 +300,14 @@ if (!function_exists('dat_page_start')) {
         <div class="nav-mobile" id="nav-mobile" hidden>
             <a href="<?= e(dat_url('how-it-works')) ?>"><?= e(t('nav.how', 'How it works')) ?></a>
             <a href="<?= e(dat_url('use-cases')) ?>"><?= e(t('nav.usecases', 'Use cases')) ?></a>
+            <a href="<?= e(dat_url('write-a-tag')) ?>"><?= e(t('nav.write', 'Write a tag')) ?></a>
             <a href="<?= e(dat_url('privacy')) ?>"><?= e(t('nav.privacy', 'Privacy')) ?></a>
             <?php if ($user !== null): ?>
                 <a href="<?= e(dat_url('dashboard/index.php')) ?>"><?= e(t('nav.dashboard', 'Dashboard')) ?></a>
                 <a href="<?= e(dat_url('dashboard/messages.php')) ?>"><?= e(t('nav.messages', 'Messages')) ?></a>
             <?php else: ?>
                 <a href="<?= e(dat_url('account/login.php')) ?>"><?= e(t('nav.login', 'Log in')) ?></a>
-                <a href="<?= e(dat_url('account/register.php')) ?>"><?= e(t('nav.register', 'Create account')) ?></a>
+                <a href="<?= e(dat_url('start')) ?>"><?= e(t('start.title', 'Start with one tag')) ?></a>
             <?php endif; ?>
         </div>
     </header>
@@ -334,6 +336,7 @@ if (!function_exists('dat_page_end')) {
                 <a href="<?= e(dat_url('privacy')) ?>"><?= e(t('footer.privacy', 'Privacy')) ?></a>
                 <a href="<?= e(dat_url('docs/imprint.php')) ?>"><?= e(t('footer.imprint', 'Imprint')) ?></a>
                 <a href="<?= e(dat_url('how-it-works')) ?>"><?= e(t('nav.how', 'How it works')) ?></a>
+                <a href="<?= e(dat_url('write-a-tag')) ?>"><?= e(t('nav.write', 'Write a tag')) ?></a>
             </nav>
         </div>
         <div class="shell footer-note">

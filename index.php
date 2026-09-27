@@ -50,6 +50,14 @@ $explore = [
         'cta' => t('home.explore_see', 'See the examples'),
     ],
     [
+        'url' => dat_url('write-a-tag'),
+        'icon' => 'fa-solid fa-wifi',
+        'eyebrow' => t('home.explore4_eyebrow', 'Chip and label'),
+        'title' => t('nav.write', 'Write a tag'),
+        'body' => t('home.explore4_body', 'Which chip to buy, how to store the link with a free app such as NFC Tools, what to test, and what never belongs on a chip.'),
+        'cta' => t('home.explore_read', 'Read the guide'),
+    ],
+    [
         'url' => dat_url('privacy'),
         'icon' => 'fa-solid fa-user-shield',
         'eyebrow' => t('home.explore3_eyebrow', 'Private by default'),
@@ -73,9 +81,9 @@ dat_page_start([
                 <h1><?= e(t('home.h1_line1', 'One tag. One identity.')) ?><br><span class="hero-accent"><?= e(t('home.h1_line2', 'One portal.')) ?></span></h1>
                 <p class="hero-lead"><?= e(t('home.lead', 'A single stable link for the things you care about. Tap it with a phone and the finder sees what the asset is, and can reach you without ever seeing your contact details.')) ?></p>
                 <div class="hero-actions">
-                    <a class="btn btn-primary btn-lg" href="<?= e(dat_url('account/register.php')) ?>">
+                    <a class="btn btn-primary btn-lg" href="<?= e(dat_url('start')) ?>">
                         <i class="fa-solid fa-plus" aria-hidden="true"></i>
-                        <?= e(t('home.cta_create', 'Create an asset')) ?>
+                        <?= e(t('start.title', 'Start with one tag')) ?>
                     </a>
                     <a class="btn btn-ghost btn-lg" href="<?= e($user !== null ? dat_url('dashboard/index.php') : dat_url('account/login.php')) ?>">
                         <?= e($user !== null ? t('nav.dashboard', 'Dashboard') : t('nav.login', 'Log in')) ?>
@@ -136,8 +144,8 @@ dat_page_start([
                 <h2><?= e(t('home.cta_title', 'Start with one tag')) ?></h2>
                 <p><?= e(t('home.cta_body', 'Create an account, add an asset and download the QR code in a couple of minutes.')) ?></p>
             </div>
-            <div class="cta-band-actions">
-                <a class="btn btn-primary btn-lg" href="<?= e(dat_url('account/register.php')) ?>"><?= e(t('nav.register', 'Create account')) ?></a>
+                <div class="cta-band-actions">
+                <a class="btn btn-primary btn-lg" href="<?= e(dat_url('start')) ?>"><?= e(t('start.title', 'Start with one tag')) ?></a>
                 <a class="btn btn-outline-light btn-lg" href="<?= e($user !== null ? dat_url('dashboard/assets-new.php') : dat_url('account/login.php')) ?>">
                     <?= e($user !== null ? t('home.cta_add', 'Add an asset') : t('nav.login', 'Log in')) ?>
                 </a>
