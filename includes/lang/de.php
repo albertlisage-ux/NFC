@@ -196,6 +196,16 @@ return [
     'guide.t6_a' => 'Das Lesen zeigt nur den öffentlichen Link und den öffentlichen Text. Zum Bearbeiten der Seite ist das Kontopasswort nötig, und die Seite zeigt nie Kontaktdaten des Eigentümers.',
     'guide.cta_title' => 'Ersten Tag beschreiben',
     'guide.cta_body' => 'Legen Sie einen Tag mit Link an, kopieren Sie den NFC-Text und beschreiben Sie den Chip. Mit einem Gast-Tag können Sie vor dem Hardwarekauf üben.',
+    'guide.wa_title' => 'WhatsApp und andere Lese-Apps',
+    'guide.wa_lead' => 'Ein QR-Code lässt sich von fast jeder App scannen, auch von WhatsApp. Ein Chip gibt den Link immer an das Telefon weiter, und das entscheidet, was sich öffnet.',
+    'guide.wa1_q' => 'Kann WhatsApp den QR-Code scannen?',
+    'guide.wa1_a' => 'Ja. WhatsApp hat einen eigenen Scanner neben dem Suchfeld, und die Kamera in einem Chat liest Codes ebenfalls. Ein Code, der auf Ihre Tag-Seite zeigt, öffnet sich im WhatsApp-Browser, wo der Finder die Seite lesen und die anonyme Nachricht senden kann. In ein WLAN einloggen kann WhatsApp per Scan nicht, dafür braucht es die Kamera-App.',
+    'guide.wa2_q' => 'Öffnet das Antippen des Chips WhatsApp?',
+    'guide.wa2_a' => 'Nein. Das Antippen übergibt den Link an das Betriebssystem, und das öffnet den Browser. WhatsApp registriert sich nicht als Empfänger für NFC-Links, kein Chip kann also einen Chat erzwingen. Möglich ist, den Link selbst zu einem WhatsApp-Link zu machen, und genau das tut der optionale Knopf auf der Tag-Seite.',
+    'guide.wa3_q' => 'Wie bekomme ich einen WhatsApp-Knopf auf meine Tag-Seite?',
+    'guide.wa3_a' => 'Objekt in der Übersicht öffnen, WhatsApp-Nummer eintragen und speichern. Die öffentliche Seite zeigt dann "Über WhatsApp schreiben" neben "Ich habe das gefunden", mit einem fertigen ersten Satz, der das Objekt nennt. Feld leeren, und der Knopf verschwindet wieder.',
+    'guide.wa4_q' => 'Sollte der Chip direkt auf WhatsApp zeigen?',
+    'guide.wa4_a' => 'Möglich, aber dann fehlt die Seite: keine Objektangaben, keine Fotos, kein Nachrichtenverlauf, und der Link lässt sich später nicht ändern. Zeigt der Chip auf das Portal und bietet WhatsApp von dort an, bleibt beides erhalten, und die anonyme Nachricht bleibt für Finder verfügbar, die ihre eigene Nummer nicht herausgeben wollen.',
 
     // Gast-Sitzungen
     'guest.display_name' => 'Gast',
@@ -488,6 +498,8 @@ return [
     'public.found_title' => 'Ein Finder hat dieses Objekt bereits gemeldet.',
     'public.found_body' => 'Sie können trotzdem eine Nachricht mit weiteren Hinweisen senden.',
     'public.found_cta' => 'Ich habe das gefunden',
+    'public.whatsapp_cta' => 'Über WhatsApp schreiben',
+    'whatsapp.message' => 'Hallo, ich habe den Tag von %1$s (%2$s) gescannt. Das habe ich gefunden:',
     'public.privacy_note' => 'Diese Seite zeigt niemals Name, Anschrift, Telefonnummer oder E-Mail-Adresse des Eigentümers.',
 
     // Finder-Kontakt
@@ -582,6 +594,9 @@ return [
     'asset.details' => 'Angaben',
     'asset.details_hint' => 'Als privat markierte Felder werden gespeichert, aber nie auf der öffentlichen Seite gezeigt.',
     'asset.private' => 'privat',
+    'asset.whatsapp' => 'WhatsApp-Nummer für Finder (optional)',
+    'asset.whatsapp_placeholder' => '+49 170 0000000',
+    'asset.whatsapp_hint' => 'Leer lassen: Die Tag-Seite bietet dann nur die anonyme Nachricht an. Mit einer Nummer erscheint auf der Seite ein WhatsApp-Knopf mit fertiger Nachricht. Die Nummer steht nie auf der Seite, wer den Chat öffnet, sieht sie aber in WhatsApp.',
     'asset.status' => 'Status',
     'asset.status_title' => 'Status',
     'asset.status_saved' => 'Status aktualisiert.',

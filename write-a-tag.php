@@ -244,6 +244,30 @@ dat_page_start([
         </div>
     </section>
 
+    <section class="section section-split">
+        <div class="shell">
+            <h2><?= e(t('guide.wa_title', 'WhatsApp and other reading apps')) ?></h2>
+            <p class="section-lead"><?= e(t('guide.wa_lead', 'A QR code can be scanned by almost any app, including WhatsApp. A chip tap always hands the link to the phone, which then decides what opens.')) ?></p>
+
+            <div class="faq">
+                <?php
+                $whatsappFaq = [
+                    ['q' => t('guide.wa1_q', 'Can WhatsApp scan the QR code?'), 'a' => t('guide.wa1_a', 'Yes. WhatsApp has its own scanner, next to the search field, and the camera in a chat also reads codes. A code that points at your tag page opens inside the WhatsApp browser, where the finder can read the page and send the anonymous message. Joining a Wi-Fi network is the one thing WhatsApp cannot do from a scan, that needs the phone camera.')],
+                    ['q' => t('guide.wa2_q', 'Does tapping the chip open WhatsApp?'), 'a' => t('guide.wa2_a', 'No. A tap gives the link to the operating system, which opens the browser. WhatsApp does not register itself as a handler for NFC links, so no chip can force a chat to open. What you can do is make the link itself a WhatsApp link, and that is exactly what the optional button on the tag page does.')],
+                    ['q' => t('guide.wa3_q', 'How do I get a WhatsApp button on my tag page?'), 'a' => t('guide.wa3_a', 'Open the asset in the dashboard, enter a WhatsApp number and save. The public page then shows "Message on WhatsApp" next to "I found this", with a ready-made first sentence that names the asset. Leave the field empty and the button disappears again.')],
+                    ['q' => t('guide.wa4_q', 'Should the chip point straight at WhatsApp instead?'), 'a' => t('guide.wa4_a', 'It can, but you lose the page: no asset details, no photos, no message history, and the link cannot be changed later. Pointing the chip at the portal and offering WhatsApp from there keeps both, and the anonymous message stays available for finders who do not want to give away their own number.')],
+                ];
+                foreach ($whatsappFaq as $item):
+                ?>
+                    <details class="faq-item">
+                        <summary><?= e($item['q']) ?></summary>
+                        <p><?= e($item['a']) ?></p>
+                    </details>
+                <?php endforeach; ?>
+            </div>
+        </div>
+    </section>
+
     <section class="cta-band">
         <div class="shell cta-band-inner">
             <div>

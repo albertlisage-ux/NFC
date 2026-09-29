@@ -78,6 +78,7 @@ dat_page_start([
 
             <?php dat_tag_card(dat_public_asset($asset), $images, [
                 'found_url' => dat_url('t/found.php') . '?id=' . rawurlencode($asset['public_id']),
+                'whatsapp_url' => dat_whatsapp_url($asset, dat_whatsapp_message($asset)),
             ]); ?>
 
             <?php if ($threadUrl !== null): ?>

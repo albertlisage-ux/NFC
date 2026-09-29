@@ -33,6 +33,7 @@ if (($_SERVER['REQUEST_METHOD'] ?? '') === 'POST') {
             'status' => (int) ($_POST['status'] ?? $asset['status']),
             'metadata' => is_array($_POST['metadata'] ?? null) ? $_POST['metadata'] : [],
             'type' => (int) ($_POST['type'] ?? $asset['type']),
+            'contact_whatsapp' => $_POST['contact_whatsapp'] ?? null,
         ];
 
         if ($payload['name'] === '') {

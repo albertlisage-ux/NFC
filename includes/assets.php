@@ -402,6 +402,66 @@ if (!function_exists('dat_tag_status_label')) {
  * ---------------------------------------------------------------------- */
 
 /**
+ * Normalise an optional WhatsApp number.
+ *
+ * Returns null when the value cannot be a phone number, so a typo silently
+ * disables the WhatsApp button instead of producing a broken link.
+ */
+if (!function_exists('dat_normalize_whatsapp')) {
+    function dat_normalize_whatsapp($raw)
+    {
+        $raw = trim((string) $raw);
+        if ($raw === '') {
+            return null;
+        }
+
+        $hasPlus = strpos($raw, '+') === 0;
+        $digits = preg_replace('/\D+/', '', $raw);
+        if (!is_string($digits) || strlen($digits) < 8 || strlen($digits) > 15) {
+            return null;
+        }
+
+        return ($hasPlus ? '+' : '') . $digits;
+    }
+}
+
+/**
+ * Deep link that opens a WhatsApp chat with a prefilled message.
+ *
+ * The number is never printed on the tag page. Whoever taps the button does
+ * see it inside WhatsApp, so the button is opt-in per asset.
+ */
+if (!function_exists('dat_whatsapp_url')) {
+    function dat_whatsapp_url(array $asset, $message = '')
+    {
+        $number = dat_normalize_whatsapp($asset['contact_whatsapp'] ?? '');
+        if ($number === null) {
+            return null;
+        }
+
+        $url = 'https://wa.me/' . ltrim($number, '+');
+        $message = trim((string) $message);
+        if ($message !== '') {
+            $url .= '?text=' . rawurlencode($message);
+        }
+
+        return $url;
+    }
+}
+
+/** Ready-made message a finder can send without typing anything. */
+if (!function_exists('dat_whatsapp_message')) {
+    function dat_whatsapp_message(array $asset)
+    {
+        return sprintf(
+            t('whatsapp.message', 'Hello, I scanned the tag of %1$s (%2$s). Here is what I found:'),
+            $asset['name'] ?? '',
+            $asset['public_id'] ?? ''
+        );
+    }
+}
+
+/**
  * Unambiguous alphabet: no 0/O and no 1/I, so a printed ID can be typed back
  * in without guessing. 32^8 combinations keep IDs unguessable.
  */
@@ -618,7 +678,7 @@ if (!function_exists('dat_asset_images')) {
  * Returns the created row, or null when the database is unavailable.
  */
 if (!function_exists('dat_create_asset')) {
-    function dat_create_asset($ownerId, $type, $name, $description = '', array $metadata = [], $status = DAT_ASSET_STATUS_ACTIVE)
+    function dat_create_asset($ownerId, $type, $name, $description = '', array $metadata = [], $status = DAT_ASSET_STATUS_ACTIVE, $contactWhatsapp = null)
     {
         $db = dat_db();
         if ($db === null) {
@@ -632,6 +692,7 @@ if (!function_exists('dat_create_asset')) {
         }
 
         $metadata = dat_sanitize_metadata($type, $metadata);
+        $contactWhatsapp = dat_normalize_whatsapp($contactWhatsapp);
         $assetId = dat_uuid();
         $publicId = dat_unique_public_id();
         $now = dat_now();
@@ -641,8 +702,8 @@ if (!function_exists('dat_create_asset')) {
 
             dat_query(
                 'INSERT INTO ' . dat_table('assets') . '
-                    (id, public_id, owner_id, type, name, description, status, metadata_json, created_at, updated_at)
-                 VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)',
+                    (id, public_id, owner_id, type, name, description, status, metadata_json, contact_whatsapp, created_at, updated_at)
+                 VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)',
                 [
                     $assetId,
                     $publicId,
@@ -652,6 +713,7 @@ if (!function_exists('dat_create_asset')) {
                     mb_substr(trim((string) $description), 0, 2000),
                     (int) $status,
                     $metadata ? json_encode($metadata, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES) : null,
+                    $contactWhatsapp,
                     $now,
                     $now,
                 ]
@@ -710,15 +772,21 @@ if (!function_exists('dat_update_asset')) {
             }
         }
 
+        // An empty submitted value clears the number, an absent key keeps it.
+        $contactWhatsapp = array_key_exists('contact_whatsapp', $data)
+            ? dat_normalize_whatsapp($data['contact_whatsapp'])
+            : ($asset['contact_whatsapp'] ?? null);
+
         $affected = dat_exec(
             'UPDATE ' . dat_table('assets') . '
-                SET name = ?, description = ?, status = ?, metadata_json = ?, updated_at = ?
+                SET name = ?, description = ?, status = ?, metadata_json = ?, contact_whatsapp = ?, updated_at = ?
               WHERE id = ? AND owner_id = ?',
             [
                 $name,
                 mb_substr(trim((string) ($data['description'] ?? $asset['description'])), 0, 2000),
                 $status,
                 $metadata ? json_encode($metadata, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES) : null,
+                $contactWhatsapp,
                 dat_now(),
                 $assetId,
                 $ownerId,

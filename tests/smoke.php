@@ -197,6 +197,42 @@ check('every type belongs to exactly one category', (static function () {
 check('catalog entries name an image file', array_filter(array_column($catalog, 'image'), static fn ($value) => trim((string) $value) === '') === []);
 check('catalog image names are safe', array_filter(array_column($catalog, 'image'), static fn ($value) => preg_match('/^[a-z0-9-]+\.(jpg|png|webp)$/', $value) !== 1) === []);
 
+/* -------------------------------------------------------- WhatsApp ------ */
+
+echo PHP_EOL . 'WhatsApp contact' . PHP_EOL;
+
+check('a plain number is accepted', dat_normalize_whatsapp('+49 170 1234567') === '+491701234567', (string) dat_normalize_whatsapp('+49 170 1234567'));
+check('dashes and brackets are stripped', dat_normalize_whatsapp('(0170) 123-45 67') === '01701234567');
+check('a number without plus keeps working', dat_normalize_whatsapp('0049 170 1234567') === '00491701234567');
+check('empty stays empty', dat_normalize_whatsapp('   ') === null);
+check('too short is rejected', dat_normalize_whatsapp('12345') === null);
+check('too long is rejected', dat_normalize_whatsapp('1234567890123456789') === null);
+check('letters alone are rejected', dat_normalize_whatsapp('call me') === null);
+
+$waAsset = [
+    'public_id' => 'MENUTAG2',
+    'name' => 'Café menu board',
+    'contact_whatsapp' => '+49 170 1234567',
+];
+$waUrl = dat_whatsapp_url($waAsset, 'Hello');
+check('wa.me link is built', strpos($waUrl, 'https://wa.me/491701234567?text=') === 0, (string) $waUrl);
+check('wa.me link carries the message', strpos((string) $waUrl, rawurlencode('Hello')) !== false);
+check('no number means no link', dat_whatsapp_url(['contact_whatsapp' => '']) === null);
+check('the ready-made message names the asset', strpos(dat_whatsapp_message($waAsset), 'Café menu board') !== false);
+
+$waPublic = dat_public_asset([
+    'public_id' => 'MENUTAG2',
+    'type' => DAT_ASSET_TYPE_MENU_BOARD,
+    'name' => 'Café menu board',
+    'description' => '',
+    'status' => DAT_ASSET_STATUS_ACTIVE,
+    'metadata_json' => '{}',
+    'contact_whatsapp' => '+491701234567',
+]);
+check('the public projection never carries the number',
+    !in_array('+491701234567', array_map('strval', $waPublic), true)
+    && !isset($waPublic['contact_whatsapp']));
+
 $demoIds = array_column($catalog, 'public_id');
 check('demo public IDs are unique', count(array_unique($demoIds)) === count($demoIds));
 check('demo public IDs are valid', count(array_filter($demoIds, 'dat_is_valid_public_id')) === count($demoIds), implode(',', $demoIds));

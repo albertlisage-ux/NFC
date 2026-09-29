@@ -143,6 +143,7 @@ if (!function_exists('dat_tag_card')) {
         $isFound = (int) $asset['status'] === DAT_ASSET_STATUS_FOUND;
         $compact = !empty($options['compact']);
         $foundUrl = $options['found_url'] ?? null;
+        $whatsappUrl = $options['whatsapp_url'] ?? null;
         // The tag page owns the h1; previews embedded in another page use h2.
         $headingLevel = (int) ($options['heading_level'] ?? 1);
         $headingTag = in_array($headingLevel, [1, 2, 3, 4, 5, 6], true) ? 'h' . $headingLevel : 'h1';
@@ -205,11 +206,21 @@ if (!function_exists('dat_tag_card')) {
                 </dl>
             <?php endif; ?>
 
-            <?php if ($foundUrl): ?>
-                <a class="btn btn-primary btn-block" href="<?= e($foundUrl) ?>">
-                    <i class="fa-solid fa-hand-holding-heart" aria-hidden="true"></i>
-                    <?= e(t('public.found_cta', 'I found this')) ?>
-                </a>
+            <?php if ($foundUrl || $whatsappUrl): ?>
+                <div class="tag-actions">
+                    <?php if ($foundUrl): ?>
+                        <a class="btn btn-primary btn-block" href="<?= e($foundUrl) ?>">
+                            <i class="fa-solid fa-hand-holding-heart" aria-hidden="true"></i>
+                            <?= e(t('public.found_cta', 'I found this')) ?>
+                        </a>
+                    <?php endif; ?>
+                    <?php if ($whatsappUrl): ?>
+                        <a class="btn btn-whatsapp btn-block" href="<?= e($whatsappUrl) ?>" target="_blank" rel="noopener">
+                            <i class="fa-brands fa-whatsapp" aria-hidden="true"></i>
+                            <?= e(t('public.whatsapp_cta', 'Message on WhatsApp')) ?>
+                        </a>
+                    <?php endif; ?>
+                </div>
             <?php endif; ?>
 
             <p class="tag-privacy">

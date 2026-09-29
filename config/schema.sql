@@ -26,6 +26,9 @@ CREATE TABLE IF NOT EXISTS dat_assets (
   description   TEXT             NULL,
   status        TINYINT      NOT NULL DEFAULT 1,
   metadata_json LONGTEXT         NULL,
+  -- Optional WhatsApp number for finders. Never rendered as text on a public
+  -- page; it only becomes a wa.me button the owner has to switch on.
+  contact_whatsapp VARCHAR(32)   NULL,
   created_at    DATETIME     NOT NULL,
   updated_at    DATETIME     NOT NULL,
   deleted_at    DATETIME         NULL,

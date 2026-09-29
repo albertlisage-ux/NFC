@@ -80,6 +80,7 @@ function integration_schema(): array
             description TEXT,
             status INTEGER NOT NULL DEFAULT 1,
             metadata_json TEXT,
+            contact_whatsapp TEXT,
             created_at TEXT NOT NULL,
             updated_at TEXT NOT NULL,
             deleted_at TEXT,
@@ -322,6 +323,32 @@ check('private fields are still stored', dat_asset_metadata($board)['wifi_passwo
 
 $counts = dat_asset_counts($owner['id']);
 check('asset counts add up', $counts['total'] === 2 && $counts['lost'] === 1, json_encode($counts));
+
+/* ------------------------------------------------------ WhatsApp field -- */
+
+echo PHP_EOL . 'WhatsApp contact' . PHP_EOL;
+
+check('a new asset starts without a number',
+    dat_normalize_whatsapp($board['contact_whatsapp'] ?? '') === null);
+
+check('the number can be stored', dat_update_asset($board['id'], $owner['id'], [
+    'name' => 'Café menu board',
+    'contact_whatsapp' => '+49 (170) 123-4567',
+]) === true);
+$board = dat_asset_for_owner($board['id'], $owner['id']);
+check('the number is normalised on save', $board['contact_whatsapp'] === '+491701234567', (string) $board['contact_whatsapp']);
+check('the tag page would get a wa.me link',
+    strpos((string) dat_whatsapp_url($board, 'Hello'), 'https://wa.me/491701234567?text=') === 0);
+check('the number stays out of the public projection', !isset(dat_public_asset($board)['contact_whatsapp']));
+
+dat_update_asset($board['id'], $owner['id'], ['name' => 'Café menu board', 'contact_whatsapp' => '']);
+check('clearing the field removes the button',
+    dat_normalize_whatsapp(dat_asset_for_owner($board['id'], $owner['id'])['contact_whatsapp']) === null);
+
+dat_update_asset($board['id'], $owner['id'], ['name' => 'Café menu board', 'contact_whatsapp' => '+491701234567']);
+check('the number survives an unrelated update', dat_normalize_whatsapp(
+    dat_asset_for_owner($board['id'], $owner['id'])['contact_whatsapp']
+) === '+491701234567');
 
 /* --------------------------------------------------------------- tags -- */
 

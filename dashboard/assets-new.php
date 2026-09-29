@@ -39,7 +39,9 @@ if (($_SERVER['REQUEST_METHOD'] ?? '') === 'POST') {
                 (int) $values['type'],
                 $values['name'],
                 $values['description'],
-                $values['metadata']
+                $values['metadata'],
+                DAT_ASSET_STATUS_ACTIVE,
+                $_POST['contact_whatsapp'] ?? null
             );
 
             if ($asset === null) {

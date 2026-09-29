@@ -116,6 +116,17 @@ if (!function_exists('dat_asset_form')) {
                 </div>
             <?php endif; ?>
 
+            <?php
+            $whatsappValue = (string) ($values['contact_whatsapp'] ?? ($asset['contact_whatsapp'] ?? ''));
+            ?>
+            <div class="form-row">
+                <label for="contact_whatsapp"><?= e(t('asset.whatsapp', 'WhatsApp number for finders (optional)')) ?></label>
+                <input type="tel" id="contact_whatsapp" name="contact_whatsapp"
+                       value="<?= e($whatsappValue) ?>" maxlength="32"
+                       placeholder="<?= e(t('asset.whatsapp_placeholder', '+49 170 0000000')) ?>">
+                <span class="form-hint"><?= e(t('asset.whatsapp_hint', 'Leave it empty and the tag page only offers the anonymous message. If you enter a number, the page adds a WhatsApp button with a ready-made message. The number is never printed on the page, but anyone who opens that chat will see it in WhatsApp.')) ?></span>
+            </div>
+
             <div class="btn-group">
                 <button type="submit" class="btn btn-primary btn-lg"><?= e($submitLabel) ?></button>
                 <a class="btn btn-ghost btn-lg" href="<?= e($cancelUrl) ?>"><?= e(t('form.cancel', 'Cancel')) ?></a>

@@ -612,6 +612,11 @@ code, kbd, samp {
 .tag-photos .tag-photo-lead { grid-column: 1 / -1; aspect-ratio: 4 / 3; }
 
 .tag-description { font-size: .95rem; }
+.tag-actions { display: grid; gap: 10px; margin-top: 6px; }
+/* WhatsApp green is a brand-recognisable action colour, paired with dark text
+   so the label stays readable (contrast ratio above 8:1). */
+.btn-whatsapp { background: #25d366; color: #06331c; }
+.btn-whatsapp:hover { background: #1fbe5b; color: #06331c; }
 .tag-facts { margin: 0 0 18px; display: grid; gap: 0; }
 .tag-facts > div { display: flex; gap: 12px; padding: 9px 0; border-top: 1px solid var(--line-soft); }
 .tag-facts dt { margin: 0; width: 38%; color: var(--muted); font-size: .86rem; }

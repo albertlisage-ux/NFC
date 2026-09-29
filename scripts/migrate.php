@@ -59,6 +59,36 @@ foreach ($statements as $statement) {
 
 echo 'Schema applied (' . $created . ' statements).' . PHP_EOL;
 
+/*
+ * Columns added after the first release, applied only when they are missing so
+ * the script stays safe to run on every deploy.
+ */
+$addedColumns = [
+    'dat_assets' => [
+        'contact_whatsapp' => "VARCHAR(32) NULL AFTER metadata_json",
+    ],
+];
+
+foreach ($addedColumns as $table => $columns) {
+    foreach ($columns as $column => $definition) {
+        $exists = dat_one(
+            'SELECT column_name FROM information_schema.columns
+              WHERE table_schema = DATABASE() AND table_name = ? AND column_name = ?',
+            [$table, $column]
+        );
+        if ($exists !== null) {
+            continue;
+        }
+        try {
+            $db->exec('ALTER TABLE ' . $table . ' ADD COLUMN ' . $column . ' ' . $definition);
+            echo 'Added column ' . $table . '.' . $column . PHP_EOL;
+        } catch (Throwable $e) {
+            fwrite(STDERR, 'Failed to add ' . $table . '.' . $column . ': ' . $e->getMessage() . PHP_EOL);
+            exit(1);
+        }
+    }
+}
+
 $tables = dat_all(
     'SELECT table_name FROM information_schema.tables
       WHERE table_schema = DATABASE() AND table_name LIKE ?',
