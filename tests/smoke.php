@@ -233,6 +233,21 @@ check('the public projection never carries the number',
     !in_array('+491701234567', array_map('strval', $waPublic), true)
     && !isset($waPublic['contact_whatsapp']));
 
+/* ------------------------------------------------------- Wi-Fi codes ---- */
+
+echo PHP_EOL . 'Guest Wi-Fi code' . PHP_EOL;
+
+check('a WPA code is built',
+    dat_wifi_qr_payload('Cafe-Guest', 'Sonnenaufgang-2026') === 'WIFI:T:WPA;S:Cafe-Guest;P:Sonnenaufgang-2026;H:false;;',
+    (string) dat_wifi_qr_payload('Cafe-Guest', 'Sonnenaufgang-2026'));
+check('special characters are escaped',
+    dat_wifi_qr_payload('My;Net,work', 'a:b"c') === 'WIFI:T:WPA;S:My\;Net\,work;P:a\:b\"c;H:false;;',
+    (string) dat_wifi_qr_payload('My;Net,work', 'a:b"c'));
+check('an open network needs no password',
+    dat_wifi_qr_payload('Cafe-Guest', '', 'NOPASS') === 'WIFI:T:nopass;S:Cafe-Guest;H:false;;');
+check('a network without a name is rejected', dat_wifi_qr_payload('  ', 'secret') === null);
+check('a protected network without a password is rejected', dat_wifi_qr_payload('Cafe-Guest', '') === null);
+
 $demoIds = array_column($catalog, 'public_id');
 check('demo public IDs are unique', count(array_unique($demoIds)) === count($demoIds));
 check('demo public IDs are valid', count(array_filter($demoIds, 'dat_is_valid_public_id')) === count($demoIds), implode(',', $demoIds));

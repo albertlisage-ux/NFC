@@ -66,6 +66,7 @@ echo 'Schema applied (' . $created . ' statements).' . PHP_EOL;
 $addedColumns = [
     'dat_assets' => [
         'contact_whatsapp' => "VARCHAR(32) NULL AFTER metadata_json",
+        'tag_target' => "VARCHAR(16) NOT NULL DEFAULT 'portal' AFTER contact_whatsapp",
     ],
 ];
 

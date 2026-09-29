@@ -25,6 +25,8 @@ const args = new Map(
 const base = (args.get('base') || 'http://127.0.0.1:8080').replace(/\/$/, '');
 const outDir = args.get('out') || '/tmp/nfc-shots';
 const extraPaths = (args.get('paths') || '').split(',').map((value) => value.trim()).filter(Boolean);
+const loginEmail = args.get('email') || null;
+const loginPassword = args.get('password') || null;
 
 function resolvePlaywright() {
   const candidates = [process.env.PLAYWRIGHT_MODULE];
@@ -86,6 +88,17 @@ for (const viewport of viewports) {
     deviceScaleFactor: 1,
   });
   const page = await context.newPage();
+
+  if (viewport.label === 'desktop' && loginEmail && loginPassword) {
+    await page.goto(base + '/account/login.php', { waitUntil: 'domcontentloaded' });
+    await page.fill('#identifier', loginEmail);
+    await page.fill('#password', loginPassword);
+    await Promise.all([
+      page.waitForNavigation({ waitUntil: 'domcontentloaded' }).catch(() => {}),
+      page.click('button[type="submit"]'),
+    ]);
+    console.log('signed in as ' + loginEmail);
+  }
 
   for (const target of targets) {
     if (target.skipMobile && viewport.label === 'mobile') {

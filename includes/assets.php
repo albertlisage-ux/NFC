@@ -462,6 +462,65 @@ if (!function_exists('dat_whatsapp_message')) {
 }
 
 /**
+ * What a chip or printed code can carry.
+ *
+ * "portal" is the default and the recommended one: the tag answers with the
+ * asset page, where the finder also gets the anonymous message and the photos.
+ * "whatsapp" points the chip straight at a chat, for owners who only want to
+ * be reachable on WhatsApp and do not need the page.
+ */
+if (!function_exists('dat_tag_targets')) {
+    function dat_tag_targets()
+    {
+        return [
+            'portal' => [
+                'key' => 'portal',
+                'label' => t('target.portal', 'The tag page (recommended)'),
+                'hint' => t('target.portal.hint', 'The chip opens the page with the details, the photos and the anonymous message.'),
+                'icon' => 'fa-solid fa-tag',
+            ],
+            'whatsapp' => [
+                'key' => 'whatsapp',
+                'label' => t('target.whatsapp', 'A WhatsApp chat'),
+                'hint' => t('target.whatsapp.hint', 'The chip opens WhatsApp with your number, ready to write. Needs a WhatsApp number and loses the page.'),
+                'icon' => 'fa-brands fa-whatsapp',
+            ],
+        ];
+    }
+}
+
+if (!function_exists('dat_normalize_tag_target')) {
+    function dat_normalize_tag_target($raw)
+    {
+        $raw = strtolower(trim((string) $raw));
+        return array_key_exists($raw, dat_tag_targets()) ? $raw : 'portal';
+    }
+}
+
+/**
+ * Address the physical tag carries. Falls back to the tag page whenever the
+ * selected mode cannot produce a usable link.
+ */
+if (!function_exists('dat_tag_target_url')) {
+    function dat_tag_target_url(array $asset, $forNfc = false)
+    {
+        $mode = dat_normalize_tag_target($asset['tag_target'] ?? 'portal');
+
+        if ($mode === 'whatsapp') {
+            // NFC payloads stay short, so the chip carries the plain chat link
+            // and the phone opens WhatsApp without a prefilled paragraph.
+            $message = $forNfc ? '' : dat_whatsapp_message($asset);
+            $url = dat_whatsapp_url($asset, $message);
+            if ($url !== null) {
+                return $url;
+            }
+        }
+
+        return dat_tag_url($asset['public_id'] ?? '');
+    }
+}
+
+/**
  * Unambiguous alphabet: no 0/O and no 1/I, so a printed ID can be typed back
  * in without guessing. 32^8 combinations keep IDs unguessable.
  */
@@ -702,8 +761,8 @@ if (!function_exists('dat_create_asset')) {
 
             dat_query(
                 'INSERT INTO ' . dat_table('assets') . '
-                    (id, public_id, owner_id, type, name, description, status, metadata_json, contact_whatsapp, created_at, updated_at)
-                 VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)',
+                    (id, public_id, owner_id, type, name, description, status, metadata_json, contact_whatsapp, tag_target, created_at, updated_at)
+                 VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)',
                 [
                     $assetId,
                     $publicId,
@@ -714,6 +773,7 @@ if (!function_exists('dat_create_asset')) {
                     (int) $status,
                     $metadata ? json_encode($metadata, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES) : null,
                     $contactWhatsapp,
+                    'portal',
                     $now,
                     $now,
                 ]
@@ -777,9 +837,13 @@ if (!function_exists('dat_update_asset')) {
             ? dat_normalize_whatsapp($data['contact_whatsapp'])
             : ($asset['contact_whatsapp'] ?? null);
 
+        $tagTarget = array_key_exists('tag_target', $data)
+            ? dat_normalize_tag_target($data['tag_target'])
+            : dat_normalize_tag_target($asset['tag_target'] ?? 'portal');
+
         $affected = dat_exec(
             'UPDATE ' . dat_table('assets') . '
-                SET name = ?, description = ?, status = ?, metadata_json = ?, contact_whatsapp = ?, updated_at = ?
+                SET name = ?, description = ?, status = ?, metadata_json = ?, contact_whatsapp = ?, tag_target = ?, updated_at = ?
               WHERE id = ? AND owner_id = ?',
             [
                 $name,
@@ -787,6 +851,7 @@ if (!function_exists('dat_update_asset')) {
                 $status,
                 $metadata ? json_encode($metadata, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES) : null,
                 $contactWhatsapp,
+                $tagTarget,
                 dat_now(),
                 $assetId,
                 $ownerId,
@@ -845,13 +910,15 @@ if (!function_exists('dat_create_tag')) {
             $type = DAT_TAG_TYPE_QR;
         }
 
-        $url = dat_tag_url($asset['public_id']);
+        // QR codes and chips can carry different targets: a chip in WhatsApp
+        // mode holds the short chat link, the printed code keeps the page.
+        $url = dat_tag_target_url($asset, false);
         $tagId = dat_uuid();
 
         $payload = null;
         if ($type === DAT_TAG_TYPE_NFC) {
             require_once __DIR__ . '/nfc.php';
-            $payload = dat_nfc_payload($asset, $url);
+            $payload = dat_nfc_payload($asset, dat_tag_target_url($asset, true));
         }
 
         dat_query(
@@ -875,8 +942,8 @@ if (!function_exists('dat_sync_default_tags')) {
         }
 
         require_once __DIR__ . '/nfc.php';
-        $url = dat_tag_url($asset['public_id']);
-        $payload = dat_nfc_payload($asset, $url);
+        $url = dat_tag_target_url($asset, false);
+        $payload = dat_nfc_payload($asset, dat_tag_target_url($asset, true));
 
         dat_exec(
             'UPDATE ' . dat_table('tags') . ' SET url = ? WHERE asset_id = ? AND status = ?',

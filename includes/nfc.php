@@ -79,3 +79,59 @@ if (!function_exists('dat_nfc_capacity_hint')) {
         return null;
     }
 }
+
+/**
+ * Guest Wi-Fi code in the format phones understand when the camera scans it:
+ *
+ *   WIFI:T:WPA;S:Guest-Network;P:secret;;
+ *
+ * Used on menu boards and posters, where guests scan to join the network. The
+ * password never appears on the public tag page, only on the printable sheet
+ * the owner downloads from the dashboard.
+ */
+if (!function_exists('dat_wifi_qr_payload')) {
+    function dat_wifi_qr_payload($ssid, $password = null, $encryption = 'WPA', $hidden = false)
+    {
+        $esc = static function ($value) {
+            // The spec requires escaping \ ; , : and "
+            return str_replace(
+                ['\\', ';', ',', ':', '"'],
+                ['\\\\', '\\;', '\\,', '\\:', '\\"'],
+                (string) $value
+            );
+        };
+
+        $ssid = trim((string) $ssid);
+        if ($ssid === '') {
+            return null;
+        }
+
+        $encryption = strtoupper((string) $encryption);
+        if (!in_array($encryption, ['WPA', 'WEP', 'NOPASS'], true)) {
+            $encryption = 'WPA';
+        }
+        if ($encryption === 'NOPASS') {
+            return 'WIFI:T:nopass;S:' . $esc($ssid) . ';H:' . ($hidden ? 'true' : 'false') . ';;';
+        }
+
+        $password = (string) $password;
+        if ($password === '') {
+            return null;
+        }
+
+        return 'WIFI:T:' . $encryption
+            . ';S:' . $esc($ssid)
+            . ';P:' . $esc($password)
+            . ';H:' . ($hidden ? 'true' : 'false')
+            . ';;';
+    }
+}
+
+/** True when an asset has enough detail to build a guest Wi-Fi code. */
+if (!function_exists('dat_asset_wifi_payload')) {
+    function dat_asset_wifi_payload(array $asset)
+    {
+        $metadata = dat_asset_metadata($asset);
+        return dat_wifi_qr_payload($metadata['wifi_network'] ?? '', $metadata['wifi_password'] ?? '');
+    }
+}

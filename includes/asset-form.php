@@ -118,6 +118,7 @@ if (!function_exists('dat_asset_form')) {
 
             <?php
             $whatsappValue = (string) ($values['contact_whatsapp'] ?? ($asset['contact_whatsapp'] ?? ''));
+            $targetValue = dat_normalize_tag_target($values['tag_target'] ?? ($asset['tag_target'] ?? 'portal'));
             ?>
             <div class="form-row">
                 <label for="contact_whatsapp"><?= e(t('asset.whatsapp', 'WhatsApp number for finders (optional)')) ?></label>
@@ -125,6 +126,23 @@ if (!function_exists('dat_asset_form')) {
                        value="<?= e($whatsappValue) ?>" maxlength="32"
                        placeholder="<?= e(t('asset.whatsapp_placeholder', '+49 170 0000000')) ?>">
                 <span class="form-hint"><?= e(t('asset.whatsapp_hint', 'Leave it empty and the tag page only offers the anonymous message. If you enter a number, the page adds a WhatsApp button with a ready-made message. The number is never printed on the page, but anyone who opens that chat will see it in WhatsApp.')) ?></span>
+            </div>
+
+            <div class="form-row">
+                <label><?= e(t('asset.target', 'What should the chip and the printed code open?')) ?></label>
+                <div class="type-select">
+                    <?php foreach (dat_tag_targets() as $targetKey => $targetMeta): ?>
+                        <label class="type-option">
+                            <input type="radio" name="tag_target" value="<?= e($targetKey) ?>"
+                                   <?= $targetKey === $targetValue ? 'checked' : '' ?>>
+                            <span>
+                                <em><i class="<?= e($targetMeta['icon']) ?>" aria-hidden="true"></i></em>
+                                <?= e($targetMeta['label']) ?>
+                            </span>
+                        </label>
+                    <?php endforeach; ?>
+                </div>
+                <span class="form-hint"><?= e(t('asset.target_hint', 'A WhatsApp chip needs a number above; without one it falls back to the tag page. The tag page itself always stays reachable at the public link, whatever you choose here.')) ?></span>
             </div>
 
             <div class="btn-group">

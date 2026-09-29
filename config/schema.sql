@@ -29,6 +29,9 @@ CREATE TABLE IF NOT EXISTS dat_assets (
   -- Optional WhatsApp number for finders. Never rendered as text on a public
   -- page; it only becomes a wa.me button the owner has to switch on.
   contact_whatsapp VARCHAR(32)   NULL,
+  -- What the chip and the printed code carry: the tag page ("portal") or a
+  -- WhatsApp chat ("whatsapp").
+  tag_target    VARCHAR(16)  NOT NULL DEFAULT 'portal',
   created_at    DATETIME     NOT NULL,
   updated_at    DATETIME     NOT NULL,
   deleted_at    DATETIME         NULL,

@@ -81,6 +81,7 @@ function integration_schema(): array
             status INTEGER NOT NULL DEFAULT 1,
             metadata_json TEXT,
             contact_whatsapp TEXT,
+            tag_target TEXT NOT NULL DEFAULT \'portal\',
             created_at TEXT NOT NULL,
             updated_at TEXT NOT NULL,
             deleted_at TEXT,
@@ -349,6 +350,43 @@ dat_update_asset($board['id'], $owner['id'], ['name' => 'Café menu board', 'con
 check('the number survives an unrelated update', dat_normalize_whatsapp(
     dat_asset_for_owner($board['id'], $owner['id'])['contact_whatsapp']
 ) === '+491701234567');
+
+/* -------------------------------------------------------- chip target -- */
+
+echo PHP_EOL . 'Chip target' . PHP_EOL;
+
+$board = dat_asset_for_owner($board['id'], $owner['id']);
+check('assets start on the tag page target', dat_normalize_tag_target($board['tag_target'] ?? '') === 'portal');
+check('the stored tag points at the tag page',
+    dat_asset_tags($board['id'])[0]['url'] === dat_tag_url($board['public_id']));
+
+dat_update_asset($board['id'], $owner['id'], ['name' => 'Café menu board', 'tag_target' => 'whatsapp']);
+$board = dat_asset_for_owner($board['id'], $owner['id']);
+$boardTags = dat_asset_tags($board['id']);
+$nfcTag = null;
+foreach ($boardTags as $tag) {
+    if ((int) $tag['type'] === DAT_TAG_TYPE_NFC) {
+        $nfcTag = $tag;
+    }
+}
+check('the target is stored', dat_normalize_tag_target($board['tag_target']) === 'whatsapp');
+check('the printed code now carries the chat link',
+    $boardTags[0]['url'] === 'https://wa.me/491701234567?text=' . rawurlencode(dat_whatsapp_message($board)),
+    (string) $boardTags[0]['url']);
+check('the chip carries the short chat link', $nfcTag !== null && $nfcTag['nfc_payload'] !== null
+    && strpos($nfcTag['nfc_payload'], 'https://wa.me/491701234567') !== false
+    && strpos($nfcTag['nfc_payload'], '?text=') === false);
+check('the tag page still exists in whatsapp mode', dat_asset_by_public_id($board['public_id']) !== null);
+
+dat_update_asset($board['id'], $owner['id'], ['name' => 'Café menu board', 'tag_target' => 'portal']);
+check('switching back restores the page link',
+    dat_asset_tags($board['id'])[0]['url'] === dat_tag_url($board['public_id']));
+
+// A WhatsApp target without a number must fall back instead of breaking.
+dat_update_asset($board['id'], $owner['id'], ['name' => 'Café menu board', 'contact_whatsapp' => '', 'tag_target' => 'whatsapp']);
+$board = dat_asset_for_owner($board['id'], $owner['id']);
+check('without a number the target falls back to the page',
+    dat_tag_target_url($board) === dat_tag_url($board['public_id']));
 
 /* --------------------------------------------------------------- tags -- */
 

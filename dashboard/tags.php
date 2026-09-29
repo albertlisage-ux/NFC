@@ -56,6 +56,21 @@ $svgUrl = dat_url('qr/image.php') . '?id=' . rawurlencode($asset['public_id']) .
 $nfcUrl = dat_url('qr/nfc.php') . '?id=' . rawurlencode($asset['public_id']) . '&download=1';
 $justCreated = isset($_GET['created']);
 
+// Chip target: the tag page, or straight into a WhatsApp chat.
+$target = dat_normalize_tag_target($asset['tag_target'] ?? 'portal');
+$targetMeta = dat_tag_targets()[$target];
+$targetUrl = dat_tag_target_url($asset, false);
+$whatsappReady = dat_normalize_whatsapp($asset['contact_whatsapp'] ?? '') !== null;
+$targetWarning = ($target === 'whatsapp' && !$whatsappReady)
+    ? t('tag.target_missing_number', 'This asset is set to open WhatsApp, but no WhatsApp number is stored yet, so the chip and the code fall back to the tag page.')
+    : null;
+
+// Guest Wi-Fi code for boards and posters, owner-only and never published.
+$wifiPayload = dat_asset_wifi_payload($asset);
+$wifiQr = $wifiPayload !== null ? dat_qr_svg($wifiPayload, 6, 3) : '';
+$wifiPngUrl = dat_url('qr/image.php') . '?id=' . rawurlencode($asset['public_id']) . '&type=wifi&format=png&download=1&scale=12';
+$wifiSvgUrl = dat_url('qr/image.php') . '?id=' . rawurlencode($asset['public_id']) . '&type=wifi&format=svg&download=1&scale=12';
+
 dat_page_start([
     'title' => t('tag.page_title', 'Tags') . ' | ' . PORTAL_NAME,
     'robots' => 'noindex, nofollow',
@@ -87,6 +102,26 @@ dat_page_start([
         <h2><?= e(t('tag.public_url', 'Public link')) ?></h2>
         <p><?= e(t('tag.public_url_hint', 'This single address goes on every tag. It never changes, even if you replace a physical tag.')) ?></p>
         <p><code><?= e($publicUrl) ?></code></p>
+
+        <dl class="detail-list">
+            <div>
+                <dt><?= e(t('tag.target_label', 'What the chip carries')) ?></dt>
+                <dd>
+                    <i class="<?= e($targetMeta['icon']) ?>" aria-hidden="true"></i>
+                    <?= e($targetMeta['label']) ?>
+                    &middot; <code><?= e($targetUrl) ?></code>
+                </dd>
+            </div>
+        </dl>
+        <?php if ($targetWarning !== null): ?>
+            <div class="notice notice-warn">
+                <strong><?= e(t('tag.target_warning_title', 'Chip target incomplete')) ?></strong>
+                <p><?= e($targetWarning) ?></p>
+                <a class="btn btn-ghost btn-sm" href="<?= e(dat_url('dashboard/asset-edit.php')) ?>?id=<?= e(urlencode($asset['id'])) ?>">
+                    <?= e(t('tag.target_fix', 'Open the asset settings')) ?>
+                </a>
+            </div>
+        <?php endif; ?>
         <div class="btn-group">
             <button type="button" class="btn btn-ghost" data-copy="<?= e($publicUrl) ?>" data-copy-label="<?= e(t('tag.copied', 'Copied')) ?>">
                 <i class="fa-solid fa-copy" aria-hidden="true"></i><span><?= e(t('tag.copy_link', 'Copy link')) ?></span>
@@ -137,6 +172,24 @@ dat_page_start([
             </a>
         </div>
     </div>
+
+    <?php if ($wifiPayload !== null): ?>
+        <div class="tag-piece">
+            <div class="tag-piece-head">
+                <h3><i class="fa-solid fa-wifi" aria-hidden="true"></i><?= e(t('tag.wifi_title', 'Guest Wi-Fi code')) ?></h3>
+                <div class="btn-group">
+                    <a class="btn btn-ghost btn-sm" href="<?= e($wifiPngUrl) ?>"><?= e(t('tag.download_png', 'Download PNG')) ?></a>
+                    <a class="btn btn-ghost btn-sm" href="<?= e($wifiSvgUrl) ?>"><?= e(t('tag.download_svg', 'Download SVG')) ?></a>
+                </div>
+            </div>
+            <p><?= e(t('tag.wifi_hint', 'Print this next to the menu code. Guests scan it with the camera and their phone joins the guest network, without anyone typing a password.')) ?></p>
+            <div class="qr-preview"><?= $wifiQr ?></div>
+            <p class="form-hint">
+                <i class="fa-solid fa-lock" aria-hidden="true"></i>
+                <?= e(t('tag.wifi_private', 'This code contains the Wi-Fi password. It is only available here, and is never rendered on the public tag page.')) ?>
+            </p>
+        </div>
+    <?php endif; ?>
 
     <div class="panel">
         <div class="panel-head">
