@@ -134,10 +134,19 @@ dat_json_ld([
 
             <ul class="example-strip">
                 <?php foreach ($examples as $entry): ?>
-                    <?php $typeMeta = dat_asset_type_meta($entry['type']); ?>
+                    <?php
+                    $typeMeta = dat_asset_type_meta($entry['type']);
+                    $chipImage = dat_product_image_url($entry['image']);
+                    ?>
                     <li>
                         <a class="example-chip" href="<?= e(dat_tag_url($entry['public_id'])) ?>">
-                            <span class="example-chip-mark" aria-hidden="true"><?= e($typeMeta['emoji']) ?></span>
+                            <span class="example-chip-mark" aria-hidden="true">
+                                <?php if ($chipImage !== null): ?>
+                                    <img src="<?= e($chipImage) ?>" alt="" loading="lazy" width="48" height="48">
+                                <?php else: ?>
+                                    <?= e($typeMeta['emoji']) ?>
+                                <?php endif; ?>
+                            </span>
                             <span class="example-chip-body">
                                 <strong><?= e($entry['name']) ?></strong>
                                 <small><?= e($typeMeta['label']) ?> &middot; <?= e($entry['public_id']) ?></small>

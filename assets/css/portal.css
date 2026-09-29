@@ -324,6 +324,7 @@ code, kbd, samp {
 }
 .example-chip:hover { text-decoration: none; border-color: var(--accent-line); transform: translateY(-2px); }
 .example-chip-mark { font-size: 1.6rem; line-height: 1; }
+.example-chip-mark img { width: 48px; height: 48px; border-radius: 10px; object-fit: cover; border: 1px solid var(--line-soft); }
 .example-chip-body { flex: 1 1 auto; min-width: 0; display: flex; flex-direction: column; }
 .example-chip-body strong { font-size: .96rem; }
 .example-chip-body small { color: var(--muted); font-size: .78rem; }
