@@ -252,6 +252,12 @@ if (!function_exists('dat_page_start')) {
     <meta property="og:title" content="<?= e($title) ?>">
     <meta property="og:description" content="<?= e($description) ?>">
     <meta property="og:url" content="<?= e($canonical) ?>">
+    <?php if (strpos($robots, 'index') === 0): ?>
+        <?php $altPath = ltrim(dat_current_path(), '/'); ?>
+        <link rel="alternate" hreflang="en" href="<?= e(dat_url($altPath) . '?lang=en') ?>">
+        <link rel="alternate" hreflang="de" href="<?= e(dat_url($altPath) . '?lang=de') ?>">
+        <link rel="alternate" hreflang="x-default" href="<?= e(dat_url($altPath)) ?>">
+    <?php endif; ?>
     <link rel="icon" href="<?= e(dat_asset_url('img/favicon.svg')) ?>" type="image/svg+xml">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css"
           integrity="sha512-SnH5WK+bZxgPHs44uWIX+LLJAJ9/2PkPKZ5QiAj6Ta86w+fsb2TkcmfRyVX3pBnMFcV7oQPJkl9QevSCWr3W6A=="
@@ -374,5 +380,18 @@ if (!function_exists('dat_db_banner')) {
             </div>
         </div>
         <?php
+    }
+}
+
+/**
+ * Structured data block. Browsers never execute these, so the strict
+ * script-src policy does not get in the way.
+ */
+if (!function_exists('dat_json_ld')) {
+    function dat_json_ld(array $data)
+    {
+        echo '<script type="application/ld+json">'
+            . json_encode($data, JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE | JSON_HEX_TAG | JSON_HEX_AMP)
+            . '</script>';
     }
 }

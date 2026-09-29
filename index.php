@@ -1,6 +1,14 @@
 <?php
 /**
- * Home page: what the portal is, how a tag works, and where to start.
+ * Home page.
+ *
+ * The order answers the questions a visitor asks in sequence:
+ *   1. What is this?            hero, with a real tag page on screen
+ *   2. Show me it works.        live example tags you can open right now
+ *   3. What can I buy?          the four product families
+ *   4. How does it work?        three steps, link to the full guide
+ *   5. Is it safe?              one privacy line, link to the details
+ *   6. Get started.             the call to action
  */
 
 if (!defined('LINKTEC_SECURE')) {
@@ -8,6 +16,7 @@ if (!defined('LINKTEC_SECURE')) {
 }
 
 require_once __DIR__ . '/includes/bootstrap.php';
+require_once __DIR__ . '/includes/catalog.php';
 
 $user = dat_current_user();
 $unread = $user !== null ? dat_unread_message_count($user['id']) : 0;
@@ -32,45 +41,46 @@ $sampleAsset = dat_public_asset([
 $demoTagUrl = dat_tag_url('DEMTAG24');
 $demoQr = dat_qr_svg($demoTagUrl, 6, 3);
 
-$explore = [
-    [
-        'url' => dat_url('how-it-works'),
-        'icon' => 'fa-solid fa-list-check',
-        'eyebrow' => t('home.explore1_eyebrow', 'Step by step'),
-        'title' => t('nav.how', 'How it works'),
-        'body' => t('home.explore1_body', 'Create the asset, write the QR code or NFC chip, and see what a finder gets on screen. Includes the status flow and the tag replacement rules.'),
-        'cta' => t('home.explore_read', 'Read the guide'),
-    ],
-    [
-        'url' => dat_url('use-cases'),
-        'icon' => 'fa-solid fa-layer-group',
-        'eyebrow' => t('home.explore2_eyebrow', 'Six asset types'),
-        'title' => t('nav.usecases', 'Use cases'),
-        'body' => t('home.explore2_body', 'One platform for pets, bicycles, vehicles, clothing, everyday items and industrial equipment, with a worked example and a live tag page for each.'),
-        'cta' => t('home.explore_see', 'See the examples'),
-    ],
-    [
-        'url' => dat_url('write-a-tag'),
-        'icon' => 'fa-solid fa-wifi',
-        'eyebrow' => t('home.explore4_eyebrow', 'Chip and label'),
-        'title' => t('nav.write', 'Write a tag'),
-        'body' => t('home.explore4_body', 'Which chip to buy, how to store the link with a free app such as NFC Tools, what to test, and what never belongs on a chip.'),
-        'cta' => t('home.explore_read', 'Read the guide'),
-    ],
-    [
-        'url' => dat_url('privacy'),
-        'icon' => 'fa-solid fa-user-shield',
-        'eyebrow' => t('home.explore3_eyebrow', 'Private by default'),
-        'title' => t('nav.privacy', 'Privacy'),
-        'body' => t('home.explore3_body', 'What is stored, what each asset type publishes, and what never leaves your dashboard. Written as a description of what the software actually does.'),
-        'cta' => t('home.explore_read', 'Read the guide'),
-    ],
-];
+// Four live examples, one per product family.
+$examples = [];
+foreach (['menu_board', 'wristband', 'keychain', 'pet'] as $key) {
+    $entry = dat_demo_entry($key);
+    if ($entry !== null) {
+        $examples[] = $entry;
+    }
+}
+
+$categories = dat_asset_type_categories();
 
 dat_page_start([
-    'title' => PORTAL_NAME . ' | ' . t('home.title_suffix', 'One tag for pets, bikes, vehicles and more'),
-    'description' => t('home.meta', 'Give pets, bicycles, vehicles, clothing, everyday items and industrial equipment a stable digital identity that any phone can read.'),
+    'title' => t('home.title_suffix', 'NFC tags, QR codes and one permanent link'),
+    'description' => t('home.meta', 'Menu boards, posters, wristbands, necklaces, lanyards, keychains and mini tags that open one permanent page, plus digital tags for pets and clothing. Create the tag and write the chip yourself.'),
+    'canonical' => dat_url(''),
     'unread' => $unread,
+]);
+
+// Structured data: the catalogue as a list of products with their examples.
+$catalogueList = [];
+$position = 0;
+foreach (dat_demo_catalog() as $entry) {
+    $catalogueList[] = [
+        '@type' => 'ListItem',
+        'position' => ++$position,
+        'name' => $entry['name'],
+        'url' => dat_tag_url($entry['public_id']),
+    ];
+}
+dat_json_ld([
+    '@context' => 'https://schema.org',
+    '@type' => 'WebSite',
+    'name' => PORTAL_NAME,
+    'url' => dat_url(''),
+    'inLanguage' => dat_lang(),
+    'hasPart' => [
+        '@type' => 'ItemList',
+        'name' => t('home.families_title', 'The range, in four families'),
+        'itemListElement' => $catalogueList,
+    ],
 ]);
 ?>
 <main id="main">
@@ -79,14 +89,14 @@ dat_page_start([
             <div class="hero-copy">
                 <p class="eyebrow"><?= e(t('home.eyebrow', 'Digital asset tags')) ?></p>
                 <h1><?= e(t('home.h1_line1', 'One tag. One identity.')) ?><br><span class="hero-accent"><?= e(t('home.h1_line2', 'One portal.')) ?></span></h1>
-                <p class="hero-lead"><?= e(t('home.lead', 'A single stable link for the things you care about. Tap it with a phone and the finder sees what the asset is, and can reach you without ever seeing your contact details.')) ?></p>
+                <p class="hero-lead"><?= e(t('home.lead', 'A menu board, a poster, a wristband, a keychain. Every product carries the same permanent link, and a tap with any phone opens the page behind it.')) ?></p>
                 <div class="hero-actions">
                     <a class="btn btn-primary btn-lg" href="<?= e(dat_url('start')) ?>">
                         <i class="fa-solid fa-plus" aria-hidden="true"></i>
                         <?= e(t('start.title', 'Start with one tag')) ?>
                     </a>
-                    <a class="btn btn-ghost btn-lg" href="<?= e($user !== null ? dat_url('dashboard/index.php') : dat_url('account/login.php')) ?>">
-                        <?= e($user !== null ? t('nav.dashboard', 'Dashboard') : t('nav.login', 'Log in')) ?>
+                    <a class="btn btn-ghost btn-lg" href="<?= e(dat_url('use-cases')) ?>">
+                        <?= e(t('home.cta_products', 'See the products')) ?>
                     </a>
                 </div>
                 <ul class="hero-facts">
@@ -117,19 +127,52 @@ dat_page_start([
         </div>
     </section>
 
-    <section class="section section-explore">
+    <section class="section section-examples">
         <div class="shell">
-            <h2><?= e(t('home.explore_title', 'Where to go next')) ?></h2>
-            <p class="section-lead"><?= e(t('home.explore_lead', 'The details live on their own pages: the walkthrough, the six asset types with worked examples, and the privacy rules.')) ?></p>
-            <div class="explore-grid">
-                <?php foreach ($explore as $card): ?>
-                    <article class="explore-card">
-                        <span class="explore-icon" aria-hidden="true"><i class="<?= e($card['icon']) ?>"></i></span>
-                        <p class="eyebrow"><?= e($card['eyebrow']) ?></p>
-                        <h3><?= e($card['title']) ?></h3>
-                        <p><?= e($card['body']) ?></p>
-                        <a class="explore-link" href="<?= e($card['url']) ?>">
-                            <?= e($card['cta']) ?>
+            <h2><?= e(t('home.examples_title', 'Open a real tag')) ?></h2>
+            <p class="section-lead"><?= e(t('home.examples_lead', 'Four of the demo tags, exactly as a customer sees them after tapping the chip or scanning the code. Nothing to install.')) ?></p>
+
+            <ul class="example-strip">
+                <?php foreach ($examples as $entry): ?>
+                    <?php $typeMeta = dat_asset_type_meta($entry['type']); ?>
+                    <li>
+                        <a class="example-chip" href="<?= e(dat_tag_url($entry['public_id'])) ?>">
+                            <span class="example-chip-mark" aria-hidden="true"><?= e($typeMeta['emoji']) ?></span>
+                            <span class="example-chip-body">
+                                <strong><?= e($entry['name']) ?></strong>
+                                <small><?= e($typeMeta['label']) ?> &middot; <?= e($entry['public_id']) ?></small>
+                            </span>
+                            <i class="fa-solid fa-arrow-up-right-from-square" aria-hidden="true"></i>
+                        </a>
+                    </li>
+                <?php endforeach; ?>
+            </ul>
+        </div>
+    </section>
+
+    <section class="section section-families">
+        <div class="shell">
+            <h2><?= e(t('home.families_title', 'The range, in four families')) ?></h2>
+            <p class="section-lead"><?= e(t('home.families_lead', 'Every product answers at the same kind of link, so a menu board, a wristband and a pet pendant behave exactly the same way when they are tapped.')) ?></p>
+
+            <div class="family-grid">
+                <?php foreach ($categories as $category): ?>
+                    <article class="family-card">
+                        <h3><?= e($category['label']) ?></h3>
+                        <p><?= e($category['hint']) ?></p>
+                        <ul class="family-list">
+                            <?php foreach ($category['types'] as $typeId): ?>
+                                <?php $type = dat_asset_types()[$typeId] ?? null; if ($type === null) continue; ?>
+                                <li>
+                                    <a href="<?= e(dat_url('use-cases')) ?>#type-<?= e($type['key']) ?>">
+                                        <span aria-hidden="true"><?= e($type['emoji']) ?></span>
+                                        <?= e($type['label']) ?>
+                                    </a>
+                                </li>
+                            <?php endforeach; ?>
+                        </ul>
+                        <a class="explore-link" href="<?= e(dat_url('use-cases')) ?>#group-<?= e($category['key']) ?>">
+                            <?= e(t('home.family_link', 'See the examples')) ?>
                             <i class="fa-solid fa-arrow-right" aria-hidden="true"></i>
                         </a>
                     </article>
@@ -138,17 +181,64 @@ dat_page_start([
         </div>
     </section>
 
+    <section class="section section-split">
+        <div class="shell">
+            <h2><?= e(t('home.steps_title', 'How a tag works')) ?></h2>
+            <p class="section-lead"><?= e(t('home.steps_lead', 'Three steps, no accounts for the finder, no app installs for anyone.')) ?></p>
+            <ol class="steps">
+                <li class="step">
+                    <span class="step-index" aria-hidden="true">1</span>
+                    <h3><?= e(t('home.step1_title', 'Create the tag')) ?></h3>
+                    <p><?= e(t('home.step1_body', 'Pick a product, give it a name and add the details a stranger needs. Your account stays minimal: email and password.')) ?></p>
+                </li>
+                <li class="step">
+                    <span class="step-index" aria-hidden="true">2</span>
+                    <h3><?= e(t('home.step2_title', 'Write the chip')) ?></h3>
+                    <p><?= e(t('home.step2_body', 'Download the QR code as PNG or SVG, or copy the short NFC text and write it with any NFC app such as NFC Tools.')) ?></p>
+                </li>
+                <li class="step">
+                    <span class="step-index" aria-hidden="true">3</span>
+                    <h3><?= e(t('home.step3_title', 'Scan, and get a message')) ?></h3>
+                    <p><?= e(t('home.step3_body', 'Whoever taps the tag opens the same stable link. If they write to you, the message lands in your inbox and they never learn who you are.')) ?></p>
+                </li>
+            </ol>
+            <div class="btn-group">
+                <a class="btn btn-ghost" href="<?= e(dat_url('how-it-works')) ?>">
+                    <?= e(t('home.steps_link', 'Read the full walkthrough')) ?>
+                    <i class="fa-solid fa-arrow-right" aria-hidden="true"></i>
+                </a>
+                <a class="btn btn-ghost" href="<?= e(dat_url('write-a-tag')) ?>">
+                    <?= e(t('home.write_link', 'Writing the chip with NFC Tools')) ?>
+                    <i class="fa-solid fa-arrow-right" aria-hidden="true"></i>
+                </a>
+            </div>
+        </div>
+    </section>
+
+    <section class="section">
+        <div class="shell">
+            <div class="privacy-band">
+                <div>
+                    <h2><?= e(t('home.privacy_title', 'What a finder sees, and what stays private')) ?></h2>
+                    <p><?= e(t('home.privacy_body', 'The page describes the product, never the owner. Wi-Fi passwords, campaign IDs and production batches are stored in your dashboard and filtered out of every public page.')) ?></p>
+                </div>
+                <a class="btn btn-ghost btn-lg" href="<?= e(dat_url('privacy')) ?>">
+                    <?= e(t('home.privacy_link', 'Read the privacy summary')) ?>
+                    <i class="fa-solid fa-arrow-right" aria-hidden="true"></i>
+                </a>
+            </div>
+        </div>
+    </section>
+
     <section class="cta-band">
         <div class="shell cta-band-inner">
             <div>
                 <h2><?= e(t('home.cta_title', 'Start with one tag')) ?></h2>
-                <p><?= e(t('home.cta_body', 'Create an account, add an asset and download the QR code in a couple of minutes.')) ?></p>
+                <p><?= e(t('home.cta_body', 'Create it as a guest in a minute, download the QR code or copy the NFC text, and keep it by registering.')) ?></p>
             </div>
-                <div class="cta-band-actions">
+            <div class="cta-band-actions">
                 <a class="btn btn-primary btn-lg" href="<?= e(dat_url('start')) ?>"><?= e(t('start.title', 'Start with one tag')) ?></a>
-                <a class="btn btn-outline-light btn-lg" href="<?= e($user !== null ? dat_url('dashboard/assets-new.php') : dat_url('account/login.php')) ?>">
-                    <?= e($user !== null ? t('home.cta_add', 'Add an asset') : t('nav.login', 'Log in')) ?>
-                </a>
+                <a class="btn btn-outline-light btn-lg" href="<?= e(dat_url('use-cases')) ?>"><?= e(t('home.cta_products', 'See the products')) ?></a>
             </div>
         </div>
     </section>

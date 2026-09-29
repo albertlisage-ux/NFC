@@ -231,9 +231,11 @@ for (const viewport of viewports) {
       // A database notice can sit between the header and the hero.
       const banner = document.querySelector('.notice-warn');
       const nav = document.querySelector('.site-nav');
+      const navBottom = nav ? Math.round(nav.getBoundingClientRect().bottom) : 0;
+      const bannerBottom = banner ? Math.round(banner.getBoundingClientRect().bottom) : 0;
       const referenceBottom = Math.max(
-        banner ? banner.getBoundingClientRect().bottom : 0,
-        nav ? nav.getBoundingClientRect().bottom : 0
+        bannerBottom,
+        navBottom
       );
       const navToggle = document.querySelector('.nav-toggle');
       const bodyText = document.body.innerText;
@@ -255,6 +257,7 @@ for (const viewport of viewports) {
         hasEmDash: bodyText.includes('\u2014'),
         qrSize: qrRect ? Math.round(Math.min(qrRect.width, qrRect.height)) : 0,
         heroOffset: heroRect ? Math.round(heroRect.top - referenceBottom) : 0,
+        heroGeometry: `nav=${navBottom} banner=${bannerBottom} hero=${heroRect ? Math.round(heroRect.top) : '-'}`,
         lang: document.documentElement.lang,
         title: document.title,
         skipLink: Boolean(document.querySelector('.skip-link')),
@@ -282,7 +285,8 @@ for (const viewport of viewports) {
 
     if (target.name === 'home') {
       record('home: hero QR code is rendered', report.qrSize >= 90, `${report.qrSize}px`);
-      record('home: hero follows the header directly', report.heroOffset >= 0 && report.heroOffset < 90, `${report.heroOffset}px`);
+      record('home: hero follows the header directly', report.heroOffset >= 0 && report.heroOffset < 90,
+        `${report.heroOffset}px (${report.heroGeometry})`);
     }
   }
 
