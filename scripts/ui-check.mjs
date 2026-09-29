@@ -305,12 +305,18 @@ for (const viewport of viewports) {
     const panels = [...document.querySelectorAll('.type-panel')];
     const visible = panels.filter((panel) => panel.getBoundingClientRect().height > 0);
     const selected = [...document.querySelectorAll('[role="tab"][aria-selected="true"]')];
+    const nav = document.querySelector('.catalog-nav');
+    const navRect = nav ? nav.getBoundingClientRect() : null;
     return {
       total: panels.length,
       visibleCount: visible.length,
       visibleId: visible[0] ? visible[0].id : null,
       selectedHref: selected[0] ? selected[0].getAttribute('href') : null,
       pageHeight: document.documentElement.scrollHeight,
+      navTop: navRect ? Math.round(navRect.top) : null,
+      navBottom: navRect ? Math.round(navRect.bottom) : null,
+      navVisible: navRect ? navRect.bottom > 0 && navRect.top < window.innerHeight : false,
+      viewportHeight: window.innerHeight,
     };
   });
 
@@ -328,6 +334,21 @@ for (const viewport of viewports) {
   record('clicking a product marks its tab selected', afterClick.selectedHref === '#type-keychain', String(afterClick.selectedHref));
   record('the page did not grow into a full list', afterClick.pageHeight <= initial.pageHeight + 10,
     `${initial.pageHeight} -> ${afterClick.pageHeight}`);
+  record('the product list is still on screen after switching', afterClick.navVisible,
+    `nav top ${afterClick.navTop}, bottom ${afterClick.navBottom} of ${afterClick.viewportHeight}`);
+
+  // Switching again from further down the page must not require scrolling up.
+  await page.evaluate(() => window.scrollBy(0, 600));
+  await page.waitForTimeout(150);
+  const scrolled = await state();
+  record('the product list stays pinned while reading', scrolled.navVisible,
+    `nav top ${scrolled.navTop} after scrolling`);
+  await page.click('[role="tab"][aria-controls="type-lanyard"]');
+  await page.waitForTimeout(200);
+  const afterDeepSwitch = await state();
+  record('a product can be chosen from a scrolled position',
+    afterDeepSwitch.visibleId === 'type-lanyard' && afterDeepSwitch.navVisible,
+    `${afterDeepSwitch.visibleId}, nav top ${afterDeepSwitch.navTop}`);
 
   // Deep link straight to a panel.
   await page.goto(base + '/use-cases#type-mini_tag', { waitUntil: 'domcontentloaded' });

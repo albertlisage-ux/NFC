@@ -166,6 +166,7 @@ dat_json_ld([
 
             <div class="family-grid">
                 <?php foreach ($categories as $category): ?>
+                    <?php $firstType = dat_asset_types()[$category['types'][0] ?? 0] ?? null; ?>
                     <article class="family-card">
                         <h3><?= e($category['label']) ?></h3>
                         <p><?= e($category['hint']) ?></p>
@@ -180,7 +181,7 @@ dat_json_ld([
                                 </li>
                             <?php endforeach; ?>
                         </ul>
-                        <a class="explore-link" href="<?= e(dat_url('use-cases')) ?>#group-<?= e($category['key']) ?>">
+                        <a class="explore-link" href="<?= e(dat_url('use-cases') . ($firstType !== null ? '#type-' . $firstType['key'] : '')) ?>">
                             <?= e(t('home.family_link', 'See the examples')) ?>
                             <i class="fa-solid fa-arrow-right" aria-hidden="true"></i>
                         </a>

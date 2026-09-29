@@ -469,29 +469,52 @@ code, kbd, samp {
 
 .section-tabs .tab-heading { margin-bottom: 6px; }
 
-.type-tabs { margin-top: 26px; }
-
-.type-group + .type-group { margin-top: 26px; }
-.type-group-head { margin-bottom: 12px; }
-.type-group-head h2 { font-size: 1.05rem; margin-bottom: 2px; }
-.type-group-head p { margin: 0; font-size: .88rem; color: var(--muted); }
-
-.type-tablist { display: grid; grid-template-columns: repeat(auto-fit, minmax(170px, 1fr)); gap: 12px; }
-.type-tab {
-  display: flex; flex-direction: column; align-items: center; gap: 4px;
-  padding: 16px 12px; text-align: center; color: inherit;
-  background: var(--surface); border: 1px solid var(--line); border-radius: var(--r-card);
-  transition: border-color .15s ease, background-color .15s ease, transform .12s ease;
+/*
+ * Catalogue layout: a sticky product list beside the example that is being
+ * read. The list never scrolls away, so switching products never means
+ * scrolling back to the top.
+ */
+.catalog {
+  display: grid;
+  grid-template-columns: 286px minmax(0, 1fr);
+  gap: 34px;
+  align-items: start;
+  margin-top: 26px;
 }
-.type-tab:hover { text-decoration: none; border-color: var(--accent-line); transform: translateY(-2px); }
-.type-tab .type-tile-mark { font-size: 1.4rem; line-height: 1; }
-.type-tab-label { font-weight: 640; font-size: .92rem; }
-.type-tab-hint { font-size: .74rem; color: var(--muted); }
-.type-tab-media { display: grid; place-items: center; width: 100%; min-height: 64px; margin-bottom: 6px; }
-.type-tab-media img {
-  width: 100%; max-width: 180px; aspect-ratio: 4 / 3; object-fit: cover;
-  border-radius: 10px; border: 1px solid var(--line-soft);
+
+.catalog-nav {
+  position: sticky;
+  top: 96px;
+  max-height: calc(100dvh - 128px);
+  overflow-y: auto;
+  padding-right: 4px;
 }
+.catalog-group + .catalog-group { margin-top: 20px; }
+.catalog-group-title {
+  margin: 0 0 8px; font-size: .72rem; font-weight: 700;
+  text-transform: uppercase; letter-spacing: .1em; color: var(--muted);
+}
+.catalog-list { list-style: none; margin: 0; padding: 0; display: grid; gap: 6px; }
+.catalog-item {
+  display: flex; align-items: center; gap: 11px;
+  padding: 9px 11px; color: var(--ink-soft);
+  border: 1px solid transparent; border-radius: var(--r-control);
+  transition: background-color .15s ease, border-color .15s ease;
+}
+.catalog-item:hover { text-decoration: none; background: var(--surface); border-color: var(--line); }
+.catalog-item-mark {
+  flex: 0 0 auto; width: 34px; height: 34px; border-radius: 9px;
+  display: grid; place-items: center; overflow: hidden;
+  background: var(--surface); border: 1px solid var(--line-soft); font-size: 1.05rem;
+}
+.catalog-item-mark img { width: 100%; height: 100%; object-fit: cover; }
+.catalog-item-body { display: flex; flex-direction: column; min-width: 0; }
+.catalog-item-body strong { font-size: .92rem; font-weight: 620; }
+.catalog-item-body small {
+  color: var(--muted); font-size: .76rem;
+  overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+}
+.catalog-item:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
 
 /* Grouped product picker in the owner forms. */
 .type-group-select { border: 0; padding: 0; margin: 0 0 14px; }
@@ -500,29 +523,42 @@ code, kbd, samp {
   color: var(--muted); font-weight: 700; padding: 0 0 8px;
 }
 
-/* The selected tab is the one whose panel is targeted, or the first one when
-   the page was opened without a fragment. */
-.type-tabs:not(:has(.type-panel:target)) .type-tab[href="#type-pet"],
-.type-tabs:has(#type-pet:target) .type-tab[href="#type-pet"],
-.type-tabs:has(#type-bicycle:target) .type-tab[href="#type-bicycle"],
-.type-tabs:has(#type-vehicle:target) .type-tab[href="#type-vehicle"],
-.type-tabs:has(#type-clothing:target) .type-tab[href="#type-clothing"],
-.type-tabs:has(#type-item:target) .type-tab[href="#type-item"],
-.type-tabs:has(#type-industrial:target) .type-tab[href="#type-industrial"] {
-  border-color: var(--accent);
+/* The active product is the one whose panel is targeted, or the first entry
+   when the page was opened without a fragment. */
+.catalog:not(:has(.type-panel:target)) .catalog-item[href="#type-menu_board"],
+.catalog:has(#type-menu_board:target) .catalog-item[href="#type-menu_board"],
+.catalog:has(#type-poster:target) .catalog-item[href="#type-poster"],
+.catalog:has(#type-wristband:target) .catalog-item[href="#type-wristband"],
+.catalog:has(#type-necklace:target) .catalog-item[href="#type-necklace"],
+.catalog:has(#type-lanyard:target) .catalog-item[href="#type-lanyard"],
+.catalog:has(#type-keychain:target) .catalog-item[href="#type-keychain"],
+.catalog:has(#type-mini_tag:target) .catalog-item[href="#type-mini_tag"],
+.catalog:has(#type-pet:target) .catalog-item[href="#type-pet"],
+.catalog:has(#type-clothing:target) .catalog-item[href="#type-clothing"] {
   background: var(--accent-tint);
+  border-color: var(--accent-line);
+}
+.catalog:not(:has(.type-panel:target)) .catalog-item[href="#type-menu_board"] strong,
+.catalog:has(#type-menu_board:target) .catalog-item[href="#type-menu_board"] strong,
+.catalog:has(#type-poster:target) .catalog-item[href="#type-poster"] strong,
+.catalog:has(#type-wristband:target) .catalog-item[href="#type-wristband"] strong,
+.catalog:has(#type-necklace:target) .catalog-item[href="#type-necklace"] strong,
+.catalog:has(#type-lanyard:target) .catalog-item[href="#type-lanyard"] strong,
+.catalog:has(#type-keychain:target) .catalog-item[href="#type-keychain"] strong,
+.catalog:has(#type-mini_tag:target) .catalog-item[href="#type-mini_tag"] strong,
+.catalog:has(#type-pet:target) .catalog-item[href="#type-pet"] strong,
+.catalog:has(#type-clothing:target) .catalog-item[href="#type-clothing"] strong {
   color: var(--accent-dark);
-  transform: none;
 }
 
-.type-panels { margin-top: 22px; }
+.type-panels { min-width: 0; }
 
 /* One panel at a time. Without :has() support the first panel stays visible
    and a targeted panel is added, which degrades to the previous behaviour. */
 .type-panel { display: none; }
 .type-panel:first-of-type { display: block; }
 .type-panel:target { display: block; }
-.type-tabs:has(.type-panel:target) .type-panel:first-of-type:not(:target) { display: none; }
+.catalog:has(.type-panel:target) .type-panel:first-of-type:not(:target) { display: none; }
 
 .type-panel {
   background: var(--surface);
@@ -782,7 +818,25 @@ textarea { min-height: 130px; resize: vertical; }
   .split-grid { grid-template-columns: 1fr; gap: 28px; }
   .example-grid { grid-template-columns: 1fr; gap: 28px; }
   .example-preview { position: static; }
-  .type-tablist { grid-template-columns: repeat(3, 1fr); }
+  /* The catalogue list becomes a pinned strip under the site header. */
+  .catalog { grid-template-columns: 1fr; gap: 18px; }
+  .catalog-nav {
+    position: sticky; top: 72px; z-index: 20;
+    display: flex; align-items: center; gap: 8px;
+    margin: 0 -24px; padding: 10px 24px;
+    background: var(--canvas); border-bottom: 1px solid var(--line);
+    max-height: none; overflow-x: auto; overflow-y: hidden;
+    scroll-snap-type: x proximity; -webkit-overflow-scrolling: touch;
+  }
+  .catalog-group { display: flex; align-items: center; gap: 8px; margin: 0; }
+  .catalog-group-title { margin: 0; white-space: nowrap; }
+  .catalog-list { display: flex; gap: 8px; }
+  .catalog-item {
+    background: var(--surface); border-color: var(--line);
+    padding: 7px 12px 7px 8px; white-space: nowrap; scroll-snap-align: start;
+  }
+  .catalog-item-mark { width: 26px; height: 26px; font-size: .9rem; border-radius: 7px; }
+  .catalog-item-body small { display: none; }
   .nav-links { display: none; }
 }
 
@@ -805,12 +859,7 @@ textarea { min-height: 130px; resize: vertical; }
   .section { padding: 48px 0; }
   .page-hero { padding: 36px 0 30px; }
   .type-grid, .privacy-columns, .meta-grid, .type-select { grid-template-columns: 1fr; }
-  /* A swipeable strip keeps six types from pushing the example off screen. */
-  .type-tablist {
-    display: flex; gap: 10px; overflow-x: auto; padding-bottom: 8px;
-    scroll-snap-type: x proximity; -webkit-overflow-scrolling: touch;
-  }
-  .type-tab { flex: 0 0 auto; min-width: 132px; scroll-snap-align: start; }
+  .catalog-nav { margin: 0 -18px; padding: 10px 18px; }
   .type-panel { padding: 20px; }
   .example-head { grid-template-columns: auto 1fr; }
   .example-head .btn { grid-column: 1 / -1; justify-self: start; }

@@ -101,45 +101,54 @@ dat_page_start([
         <div class="shell">
             <p class="section-lead"><?= e(t('cases.pick_hint', 'The example below changes in place. Every product ends up at the same kind of link, so only the fields differ.')) ?></p>
 
-            <div class="type-tabs" data-tabs>
-                <?php foreach ($categories as $category): ?>
-                    <section class="type-group" id="group-<?= e($category['key']) ?>">
-                        <header class="type-group-head">
-                            <h2><?= e($category['label']) ?></h2>
-                            <p><?= e($category['hint']) ?></p>
-                        </header>
-                        <div class="type-tablist" role="tablist" aria-label="<?= e($category['label']) ?>">
-                            <?php foreach ($category['types'] as $typeId): ?>
-                                <?php
-                                $type = dat_asset_types()[$typeId] ?? null;
-                                if ($type === null) {
-                                    continue;
-                                }
-                                $entry = $entriesByType[$typeId] ?? null;
-                                $image = $entry !== null ? dat_product_image_url($entry['image']) : null;
-                                $isFirst = $typeId === $firstTypeId;
-                                ?>
-                                <a class="type-tile type-tab"
-                                   href="#type-<?= e($type['key']) ?>"
-                                   id="tab-type-<?= e($type['key']) ?>"
-                                   role="tab"
-                                   aria-controls="type-<?= e($type['key']) ?>"
-                                   aria-selected="<?= $isFirst ? 'true' : 'false' ?>"
-                                   tabindex="<?= $isFirst ? '0' : '-1' ?>">
-                                    <span class="type-tab-media">
-                                        <?php if ($image !== null): ?>
-                                            <img src="<?= e($image) ?>" alt="" loading="lazy" width="320" height="240">
-                                        <?php else: ?>
-                                            <span class="type-tile-mark" aria-hidden="true"><?= e($type['emoji']) ?></span>
-                                        <?php endif; ?>
-                                    </span>
-                                    <span class="type-tab-label"><?= e($type['label']) ?></span>
-                                    <span class="type-tab-hint"><?= e($entry['name'] ?? t('type.' . $type['key'] . '.example', $type['label'])) ?></span>
-                                </a>
-                            <?php endforeach; ?>
-                        </div>
-                    </section>
-                <?php endforeach; ?>
+            <?php /*
+             * Sticky catalogue navigation: the product list stays in view while
+             * the example on the right is read, so a visitor never has to
+             * scroll back up to switch to another product. On narrow screens
+             * the same list becomes a pinned horizontal strip.
+             */ ?>
+            <div class="catalog" data-tabs>
+                <aside class="catalog-nav" aria-label="<?= e(t('cases.tablist_label', 'Products')) ?>">
+                    <?php foreach ($categories as $category): ?>
+                        <section class="catalog-group" id="group-<?= e($category['key']) ?>">
+                            <h2 class="catalog-group-title"><?= e($category['label']) ?></h2>
+                            <ul class="catalog-list">
+                                <?php foreach ($category['types'] as $typeId): ?>
+                                    <?php
+                                    $type = dat_asset_types()[$typeId] ?? null;
+                                    if ($type === null) {
+                                        continue;
+                                    }
+                                    $entry = $entriesByType[$typeId] ?? null;
+                                    $image = $entry !== null ? dat_product_image_url($entry['image']) : null;
+                                    $isFirst = $typeId === $firstTypeId;
+                                    ?>
+                                    <li>
+                                        <a class="catalog-item"
+                                           href="#type-<?= e($type['key']) ?>"
+                                           id="tab-type-<?= e($type['key']) ?>"
+                                           role="tab"
+                                           aria-controls="type-<?= e($type['key']) ?>"
+                                           aria-selected="<?= $isFirst ? 'true' : 'false' ?>"
+                                           tabindex="<?= $isFirst ? '0' : '-1' ?>">
+                                            <span class="catalog-item-mark" aria-hidden="true">
+                                                <?php if ($image !== null): ?>
+                                                    <img src="<?= e($image) ?>" alt="" loading="lazy" width="40" height="40">
+                                                <?php else: ?>
+                                                    <?= e($type['emoji']) ?>
+                                                <?php endif; ?>
+                                            </span>
+                                            <span class="catalog-item-body">
+                                                <strong><?= e($type['label']) ?></strong>
+                                                <small><?= e($entry['name'] ?? t('type.' . $type['key'] . '.example', $type['label'])) ?></small>
+                                            </span>
+                                        </a>
+                                    </li>
+                                <?php endforeach; ?>
+                            </ul>
+                        </section>
+                    <?php endforeach; ?>
+                </aside>
 
                 <div class="type-panels">
                     <?php foreach ($catalog as $entry): ?>
