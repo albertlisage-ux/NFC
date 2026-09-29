@@ -307,6 +307,8 @@ for (const viewport of viewports) {
     const selected = [...document.querySelectorAll('[role="tab"][aria-selected="true"]')];
     const nav = document.querySelector('.catalog-nav');
     const navRect = nav ? nav.getBoundingClientRect() : null;
+    const panel = document.querySelector('.type-panel:target') || visible[0] || null;
+    const panelRect = panel ? panel.getBoundingClientRect() : null;
     return {
       total: panels.length,
       visibleCount: visible.length,
@@ -317,11 +319,16 @@ for (const viewport of viewports) {
       navBottom: navRect ? Math.round(navRect.bottom) : null,
       navVisible: navRect ? navRect.bottom > 0 && navRect.top < window.innerHeight : false,
       viewportHeight: window.innerHeight,
+      navWidth: navRect ? Math.round(navRect.width) : null,
+      panelWidth: panelRect ? Math.round(panelRect.width) : null,
     };
   });
 
   const initial = await state();
   record('one panel is open on load', initial.visibleCount === 1, `${initial.visibleCount} of ${initial.total}`);
+  record('the example column is much wider than the product list',
+    initial.panelWidth !== null && initial.navWidth !== null && initial.panelWidth >= initial.navWidth * 3,
+    `list ${initial.navWidth}px, example ${initial.panelWidth}px`);
   record('the first panel is the one open', initial.visibleId === 'type-menu_board', String(initial.visibleId));
   record('the first tab is marked selected', initial.selectedHref === '#type-menu_board', String(initial.selectedHref));
 
