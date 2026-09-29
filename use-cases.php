@@ -1,15 +1,15 @@
 <?php
 /**
- * Use cases: "One platform, six asset types" with a worked example per type.
+ * The catalogue: every tag product the portal supports, grouped into families,
+ * with one worked example per item.
  *
- * The six examples are tabs inside this page: picking a type swaps the panel
- * below instead of stacking all six into one long scroll. The switching is
- * driven by the URL fragment, so /use-cases#type-item keeps working, deep links
- * and the browser back button behave, and no JavaScript is required.
+ * Picking a product swaps the panel in place instead of stacking every example
+ * into one long scroll. Switching is driven by the URL fragment, so
+ * /use-cases#type-keychain keeps working, deep links and the browser back
+ * button behave, and no JavaScript is required.
  *
- * Every block is generated from includes/catalog.php, links to the real tag
- * page seeded for that entry, and derives the public/private lists from the
- * same field definitions the portal uses when rendering.
+ * Everything here is generated from includes/catalog.php, so the examples, the
+ * live tag pages and the seeded demo data always agree.
  */
 
 if (!defined('LINKTEC_SECURE')) {
@@ -23,43 +23,67 @@ $user = dat_current_user();
 $unread = $user !== null ? dat_unread_message_count($user['id']) : 0;
 
 /**
- * Extra copy per example. Kept next to the catalog keys so a translator sees
- * the scenario, the "why it helps" line and the type name together.
+ * Worked scenario per product. Kept next to the catalog keys so a translator
+ * sees the situation and the reason it helps together.
  */
 $stories = [
+    'menu_board' => [
+        'situation' => t('case.menu_board.situation', 'The season changes, three prices change with it, and the boards at the counter still show last month.'),
+        'helps' => t('case.menu_board.helps', 'The code on the board opens the live menu, so a price change never means reprinting. Guests get the Wi-Fi name from the board, while the actual Wi-Fi password stays in the owner dashboard: it is fine for people standing in the room, not for a page the whole internet can open.'),
+    ],
+    'poster' => [
+        'situation' => t('case.poster.situation', 'A poster hangs in the window for eight weeks and the phone number printed on it belongs to someone who has left.'),
+        'helps' => t('case.poster.helps', 'The chip behind the paper points at the current campaign, so the offer behind the poster can change without touching the print. The internal campaign ID stays in the dashboard so the window poster cannot be traced back to the shop’s planning.'),
+    ],
+    'wristband' => [
+        'situation' => t('case.wristband.situation', 'At the gate, eight hundred wristbands are handed out and the crew has to match a guest to a booking in seconds.'),
+        'helps' => t('case.wristband.helps', 'Each band carries its own link, so a tap at any gate shows the booking it belongs to. The production batch is stored for the organiser, which is how a faulty batch can be traced later without printing it on the band.'),
+    ],
+    'necklace' => [
+        'situation' => t('case.necklace.situation', 'The cat will not wear a collar with a dangling tag, but the family still wants a way back if she wanders off.'),
+        'helps' => t('case.necklace.helps', 'A small pendant sits flat against the fur and answers with her name, breed and colour. Whoever finds her can send a message from the page, and the pendant never carries a phone number that a stranger could read off the collar.'),
+    ],
+    'lanyard' => [
+        'situation' => t('case.lanyard.situation', 'Visitor passes are handed out at reception and collected again at the end of the day, and the paper list never matches the lanyards.'),
+        'helps' => t('case.lanyard.helps', 'A tap on the lanyard shows which pass it is and who is holding it, so the desk can see what is still out at the end of the day. The safety release is described on the page, which matters when someone needs to hand a card back quickly.'),
+    ],
+    'keychain' => [
+        'situation' => t('case.keychain.situation', 'A set of keys is found in a doorway and the only clue is a keychain with a faded logo.'),
+        'helps' => t('case.keychain.helps', 'The keychain answers with what it belongs to and one button to send a message. The owner decides whether to reply, and the production batch stays internal so the finder cannot work out where the keys live from the page alone.'),
+    ],
+    'mini_tag' => [
+        'situation' => t('case.mini_tag.situation', 'Fifty identical tool boxes sit in a workshop and every search for the right one costs ten minutes.'),
+        'helps' => t('case.mini_tag.helps', 'A label the size of a fingernail is enough to answer with the tool it belongs to and where it lives. Because it is small, it goes on the box, the cable drum or the zip of a bag, and the batch number stays in the dashboard instead of on the workshop floor.'),
+    ],
     'pet' => [
         'situation' => t('case.pet.situation', 'The dog slips through the garden gate and a neighbour finds him two streets away.'),
         'helps' => t('case.pet.helps', 'The collar chip is tapped with a phone: name, breed and colour are on screen, and one button sends a message. The owner answers and collects the dog, without publishing a phone number on the collar.'),
-    ],
-    'bicycle' => [
-        'situation' => t('case.bicycle.situation', 'The e-bike is moved by station staff during building work and ends up in another rack.'),
-        'helps' => t('case.bicycle.helps', 'The QR sticker on the frame names the brand, model and frame size, which is enough to describe the bike exactly. The frame number stays private, so a found notice cannot be turned into a forged ownership claim.'),
-    ],
-    'vehicle' => [
-        'situation' => t('case.vehicle.situation', 'Someone scrapes the rear bumper in a car park and a paper note would blow away.'),
-        'helps' => t('case.vehicle.helps', 'The windscreen tag is scanned: model, year and colour identify the car, and the witness writes a message with the time and place. The licence plate and chassis number never appear on the page.'),
     ],
     'clothing' => [
         'situation' => t('case.clothing.situation', 'A club jacket is left in the changing room and ends up in the lost-property box.'),
         'helps' => t('case.clothing.helps', 'The tag in the inside pocket tells staff what the jacket is and how to reach the owner. The owner replies where and when to collect it, and can leave their name out of it entirely.'),
     ],
-    'item' => [
-        'situation' => t('case.item.situation', 'The camera bag is left under a café table and handed in at the counter.'),
-        'helps' => t('case.item.helps', 'Staff scan the tag, see what the bag is and write one message. The purchase date and serial number are stored for the owner but never published, so the description cannot be reused for a fake classified ad.'),
-    ],
-    'industrial' => [
-        'situation' => t('case.industrial.situation', 'A mobile power unit is at a customer site and nobody can reach the fitter who knows the maintenance interval.'),
-        'helps' => t('case.industrial.helps', 'The plate is scanned: manufacturer, model and category are visible, and the service desk receives the message with the site details. Machine ID, serial number, location and service contact stay private, so the plate can be left readable on the shop floor.'),
-    ],
 ];
 
-$types = dat_asset_types();
+$categories = dat_asset_type_categories();
 $catalog = dat_demo_catalog();
-$firstKey = array_key_first($types) !== null ? $types[array_key_first($types)]['key'] : 'pet';
+
+// Examples indexed by asset type, so a category block can find its tab.
+$entriesByType = [];
+foreach ($catalog as $entry) {
+    $entriesByType[$entry['type']] = $entry;
+}
+
+$firstTypeId = null;
+foreach ($categories as $category) {
+    if ($firstTypeId === null && $category['types']) {
+        $firstTypeId = $category['types'][0];
+    }
+}
 
 dat_page_start([
-    'title' => t('cases.title', 'Use cases') . ' | ' . PORTAL_NAME,
-    'description' => t('cases.meta', 'One platform, six asset types: worked examples for pets, bicycles, vehicles, clothing, everyday items and industrial equipment, each with a live tag page.'),
+    'title' => t('cases.title', 'Products') . ' | ' . PORTAL_NAME,
+    'description' => t('cases.meta', 'Menu boards, NFC posters, wristbands, necklaces, lanyards, keychains and mini tags, plus the everyday assets you can tag directly. One worked example per product, each with a live tag page.'),
     'canonical' => dat_url('use-cases'),
     'unread' => $unread,
 ]);
@@ -67,45 +91,68 @@ dat_page_start([
 <main id="main">
     <section class="page-hero">
         <div class="shell">
-            <p class="eyebrow"><?= e(t('cases.eyebrow', 'Use cases')) ?></p>
-            <h1><?= e(t('cases.h1', 'One platform, six asset types')) ?></h1>
-            <p class="section-lead"><?= e(t('cases.lead', 'Each type keeps its own fields and its own fields stay private by default, while every asset shares the same link format. Pick a type to see its worked example and the real tag page behind it.')) ?></p>
+            <p class="eyebrow"><?= e(t('cases.eyebrow', 'Products')) ?></p>
+            <h1><?= e(t('cases.h1', 'Nine tag products, four families')) ?></h1>
+            <p class="section-lead"><?= e(t('cases.lead', 'Every product carries the same permanent link and can be written with any NFC app. Pick one to see its worked example, what a finder is allowed to see, and the real tag page behind it.')) ?></p>
         </div>
     </section>
 
     <section class="section section-tabs">
         <div class="shell">
-            <h2 class="tab-heading"><?= e(t('cases.pick', 'Choose an asset type')) ?></h2>
-            <p class="section-lead"><?= e(t('cases.pick_hint', 'The example below changes in place. Every type ends up at the same kind of link, so only the fields differ.')) ?></p>
+            <p class="section-lead"><?= e(t('cases.pick_hint', 'The example below changes in place. Every product ends up at the same kind of link, so only the fields differ.')) ?></p>
 
             <div class="type-tabs" data-tabs>
-                <nav class="type-tablist" role="tablist" aria-label="<?= e(t('cases.tablist_label', 'Asset types')) ?>">
-                    <?php foreach ($types as $type): ?>
-                        <?php $isFirst = $type['key'] === $firstKey; ?>
-                        <a class="type-tile type-tab"
-                           href="#type-<?= e($type['key']) ?>"
-                           id="tab-type-<?= e($type['key']) ?>"
-                           role="tab"
-                           aria-controls="type-<?= e($type['key']) ?>"
-                           aria-selected="<?= $isFirst ? 'true' : 'false' ?>"
-                           tabindex="<?= $isFirst ? '0' : '-1' ?>">
-                            <span class="type-tile-mark" aria-hidden="true"><?= e($type['emoji']) ?></span>
-                            <span class="type-tab-label"><?= e($type['label']) ?></span>
-                            <span class="type-tab-hint"><?= e(t('type.' . $type['key'] . '.example', $type['label'])) ?></span>
-                        </a>
-                    <?php endforeach; ?>
-                </nav>
+                <?php foreach ($categories as $category): ?>
+                    <section class="type-group" id="group-<?= e($category['key']) ?>">
+                        <header class="type-group-head">
+                            <h2><?= e($category['label']) ?></h2>
+                            <p><?= e($category['hint']) ?></p>
+                        </header>
+                        <div class="type-tablist" role="tablist" aria-label="<?= e($category['label']) ?>">
+                            <?php foreach ($category['types'] as $typeId): ?>
+                                <?php
+                                $type = dat_asset_types()[$typeId] ?? null;
+                                if ($type === null) {
+                                    continue;
+                                }
+                                $entry = $entriesByType[$typeId] ?? null;
+                                $image = $entry !== null ? dat_product_image_url($entry['image']) : null;
+                                $isFirst = $typeId === $firstTypeId;
+                                ?>
+                                <a class="type-tile type-tab"
+                                   href="#type-<?= e($type['key']) ?>"
+                                   id="tab-type-<?= e($type['key']) ?>"
+                                   role="tab"
+                                   aria-controls="type-<?= e($type['key']) ?>"
+                                   aria-selected="<?= $isFirst ? 'true' : 'false' ?>"
+                                   tabindex="<?= $isFirst ? '0' : '-1' ?>">
+                                    <span class="type-tab-media">
+                                        <?php if ($image !== null): ?>
+                                            <img src="<?= e($image) ?>" alt="" loading="lazy" width="320" height="240">
+                                        <?php else: ?>
+                                            <span class="type-tile-mark" aria-hidden="true"><?= e($type['emoji']) ?></span>
+                                        <?php endif; ?>
+                                    </span>
+                                    <span class="type-tab-label"><?= e($type['label']) ?></span>
+                                    <span class="type-tab-hint"><?= e($entry['name'] ?? t('type.' . $type['key'] . '.example', $type['label'])) ?></span>
+                                </a>
+                            <?php endforeach; ?>
+                        </div>
+                    </section>
+                <?php endforeach; ?>
 
                 <div class="type-panels">
                     <?php foreach ($catalog as $entry): ?>
                         <?php
                         $type = $entry['type'];
                         $typeMeta = dat_asset_type_meta($type);
+                        $category = dat_asset_type_category($type);
                         $story = $stories[$entry['key']] ?? ['situation' => '', 'helps' => ''];
                         $split = dat_demo_field_split($entry);
                         $publicAsset = dat_public_asset(dat_demo_asset_row($entry));
                         $tagUrl = dat_tag_url($entry['public_id']);
                         $payload = dat_nfc_payload(dat_demo_asset_row($entry), $tagUrl);
+                        $image = dat_product_image_url($entry['image']);
                         ?>
                         <article class="type-panel"
                                  id="type-<?= e($entry['key']) ?>"
@@ -115,7 +162,7 @@ dat_page_start([
                             <header class="example-head">
                                 <span class="tag-type-mark" aria-hidden="true"><?= e($typeMeta['emoji']) ?></span>
                                 <div>
-                                    <p class="eyebrow"><?= e($typeMeta['label']) ?></p>
+                                    <p class="eyebrow"><?= e($category['label']) ?> &middot; <?= e($typeMeta['label']) ?></p>
                                     <h3><?= e($entry['name']) ?></h3>
                                 </div>
                                 <a class="btn btn-ghost btn-sm" href="<?= e($tagUrl) ?>" target="_blank" rel="noopener">
@@ -169,6 +216,16 @@ dat_page_start([
                                 </div>
 
                                 <div class="example-preview">
+                                    <?php if ($image !== null): ?>
+                                        <figure class="product-shot">
+                                            <img src="<?= e($image) ?>" alt="<?= e($entry['name']) ?>" loading="lazy">
+                                        </figure>
+                                    <?php else: ?>
+                                        <p class="product-shot-placeholder">
+                                            <span class="type-tile-mark" aria-hidden="true"><?= e($typeMeta['emoji']) ?></span>
+                                            <?= e(sprintf(t('cases.photo_slot', 'Product photo: drop %s into assets/img/products/'), $entry['image'])) ?>
+                                        </p>
+                                    <?php endif; ?>
                                     <div class="tag-card-frame">
                                         <?php dat_tag_card($publicAsset, [], ['compact' => true, 'heading_level' => 4]); ?>
                                     </div>
@@ -179,27 +236,27 @@ dat_page_start([
                 </div>
             </div>
 
-            <p class="tabs-fallback"><?= e(t('cases.fallback', 'All six examples are on this page, one panel at a time. Pick another type above to switch.')) ?></p>
+            <p class="tabs-fallback"><?= e(t('cases.fallback', 'Every example is on this page, one panel at a time. Pick another product above to switch.')) ?></p>
         </div>
     </section>
 
     <section class="section section-split">
         <div class="shell">
-            <h2><?= e(t('cases.shared_title', 'What all six have in common')) ?></h2>
+            <h2><?= e(t('cases.shared_title', 'What all of them have in common')) ?></h2>
             <div class="split-grid">
                 <ul class="owner-list">
                     <li>
                         <i class="fa-solid fa-link" aria-hidden="true"></i>
                         <div>
                             <strong><?= e(t('cases.shared1', 'One link format')) ?></strong>
-                            <p><?= e(t('cases.shared1_body', 'Every asset answers at /t/{publicId}. The type only changes the fields, never the address.')) ?></p>
+                            <p><?= e(t('cases.shared1_body', 'Every product answers at /t/{publicId}. The type only changes the fields, never the address.')) ?></p>
                         </div>
                     </li>
                     <li>
                         <i class="fa-solid fa-user-shield" aria-hidden="true"></i>
                         <div>
                             <strong><?= e(t('cases.shared2', 'Private by default')) ?></strong>
-                            <p><?= e(t('cases.shared2_body', 'Identification numbers are stored for you and filtered out of every public page.')) ?></p>
+                            <p><?= e(t('cases.shared2_body', 'Wi-Fi passwords, campaign IDs and production batches are stored for you and filtered out of every public page.')) ?></p>
                         </div>
                     </li>
                 </ul>
@@ -208,14 +265,14 @@ dat_page_start([
                         <i class="fa-solid fa-arrows-rotate" aria-hidden="true"></i>
                         <div>
                             <strong><?= e(t('cases.shared3', 'Tags are interchangeable')) ?></strong>
-                            <p><?= e(t('cases.shared3_body', 'Replace a lost chip or add a second printed code without touching the asset or its link.')) ?></p>
+                            <p><?= e(t('cases.shared3_body', 'Replace a lost chip or add a second code without touching the asset or its link.')) ?></p>
                         </div>
                     </li>
                     <li>
                         <i class="fa-solid fa-comments" aria-hidden="true"></i>
                         <div>
                             <strong><?= e(t('cases.shared4', 'The same inbox')) ?></strong>
-                            <p><?= e(t('cases.shared4_body', 'Finder messages land in one place, whatever type of asset was scanned.')) ?></p>
+                            <p><?= e(t('cases.shared4_body', 'Messages land in one place, whatever product was scanned.')) ?></p>
                         </div>
                     </li>
                 </ul>
@@ -226,12 +283,12 @@ dat_page_start([
     <section class="cta-band">
         <div class="shell cta-band-inner">
             <div>
-                <h2><?= e(t('cases.cta_title', 'Which of your things would you tag first?')) ?></h2>
-                <p><?= e(t('cases.cta_body', 'Create an account and add the one that worries you most.')) ?></p>
+                <h2><?= e(t('cases.cta_title', 'Which product would you start with?')) ?></h2>
+                <p><?= e(t('cases.cta_body', 'Create the tag, download the QR code or the NFC text, and write the chip when it arrives.')) ?></p>
             </div>
             <div class="cta-band-actions">
                 <a class="btn btn-primary btn-lg" href="<?= e(dat_url('start')) ?>"><?= e(t('start.title', 'Start with one tag')) ?></a>
-                <a class="btn btn-outline-light btn-lg" href="<?= e(dat_url('how-it-works')) ?>"><?= e(t('nav.how', 'How it works')) ?></a>
+                <a class="btn btn-outline-light btn-lg" href="<?= e(dat_url('write-a-tag')) ?>"><?= e(t('nav.write', 'Write a tag')) ?></a>
             </div>
         </div>
     </section>

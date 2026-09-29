@@ -48,6 +48,17 @@ if ($user === null) {
 $created = 0;
 $reused = 0;
 
+// Drop demo assets whose catalogue entry no longer exists (for example the
+// retired bicycle, vehicle, item and industrial entries), so the demo account
+// always reflects the current catalogue.
+$validIds = array_column(dat_demo_catalog(), 'public_id');
+foreach (dat_all('SELECT id, public_id, name FROM ' . dat_table('assets') . ' WHERE owner_id = ?', [$user['id']]) as $row) {
+    if (!in_array($row['public_id'], $validIds, true)) {
+        dat_exec('DELETE FROM ' . dat_table('assets') . ' WHERE id = ?', [$row['id']]);
+        echo 'Removed retired demo asset ' . $row['public_id'] . ' (' . $row['name'] . ')' . PHP_EOL;
+    }
+}
+
 foreach (dat_demo_catalog() as $entry) {
     $existing = dat_one(
         'SELECT * FROM ' . dat_table('assets') . ' WHERE public_id = ? LIMIT 1',

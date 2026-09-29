@@ -18,12 +18,20 @@ require_once __DIR__ . '/../config/db.php';
  * Enumerations (kept in sync with config/schema.sql)
  * ---------------------------------------------------------------------- */
 
+/*
+ * Type ids are permanent: an asset keeps the id it was created with, so a
+ * printed tag never changes meaning. Ids 2, 3, 5 and 6 belonged to the first
+ * catalogue (bicycle, vehicle, item, industrial) and are retired.
+ */
 const DAT_ASSET_TYPE_PET        = 1;
-const DAT_ASSET_TYPE_BICYCLE    = 2;
-const DAT_ASSET_TYPE_VEHICLE    = 3;
 const DAT_ASSET_TYPE_CLOTHING   = 4;
-const DAT_ASSET_TYPE_ITEM       = 5;
-const DAT_ASSET_TYPE_INDUSTRIAL = 6;
+const DAT_ASSET_TYPE_MENU_BOARD = 7;
+const DAT_ASSET_TYPE_POSTER     = 8;
+const DAT_ASSET_TYPE_MINI_TAG   = 9;
+const DAT_ASSET_TYPE_LANYARD    = 10;
+const DAT_ASSET_TYPE_WRISTBAND  = 11;
+const DAT_ASSET_TYPE_KEYCHAIN   = 12;
+const DAT_ASSET_TYPE_NECKLACE   = 13;
 
 const DAT_ASSET_STATUS_ACTIVE   = 1;
 const DAT_ASSET_STATUS_LOST     = 2;
@@ -53,9 +61,108 @@ if (!function_exists('dat_asset_types')) {
             return $types;
         }
 
+        // Field visibility drives both the owner forms and what a tag page may
+        // render, so "public" => false values never reach a public view.
         $types = [
+            DAT_ASSET_TYPE_MENU_BOARD => [
+                'key' => 'menu_board',
+                'category' => 'signage',
+                'icon' => 'fa-solid fa-rectangle-list',
+                'emoji' => "\u{1F4CB}",
+                'label' => t('type.menu_board', 'Menu board'),
+                'fields' => [
+                    ['key' => 'material', 'label' => t('field.material', 'Material'), 'public' => true],
+                    ['key' => 'size', 'label' => t('field.size', 'Size'), 'public' => true],
+                    ['key' => 'location', 'label' => t('field.location', 'Placement'), 'public' => true],
+                    ['key' => 'menu_url', 'label' => t('field.menu_url', 'Digital menu'), 'public' => true],
+                    ['key' => 'wifi_network', 'label' => t('field.wifi_network', 'Guest Wi-Fi name'), 'public' => true],
+                    ['key' => 'wifi_password', 'label' => t('field.wifi_password', 'Wi-Fi password'), 'public' => false],
+                ],
+            ],
+            DAT_ASSET_TYPE_POSTER => [
+                'key' => 'poster',
+                'category' => 'signage',
+                'icon' => 'fa-solid fa-image',
+                'emoji' => "\u{1F5BC}",
+                'label' => t('type.poster', 'NFC poster'),
+                'fields' => [
+                    ['key' => 'material', 'label' => t('field.material', 'Material'), 'public' => true],
+                    ['key' => 'size', 'label' => t('field.size', 'Size'), 'public' => true],
+                    ['key' => 'location', 'label' => t('field.location', 'Placement'), 'public' => true],
+                    ['key' => 'campaign_id', 'label' => t('field.campaign_id', 'Campaign ID'), 'public' => false],
+                ],
+            ],
+            DAT_ASSET_TYPE_WRISTBAND => [
+                'key' => 'wristband',
+                'category' => 'wearables',
+                'icon' => 'fa-solid fa-clock',
+                'emoji' => "\u{1F39F}",
+                'label' => t('type.wristband', 'Wristband'),
+                'fields' => [
+                    ['key' => 'material', 'label' => t('field.material', 'Material'), 'public' => true],
+                    ['key' => 'color', 'label' => t('field.color', 'Colour'), 'public' => true],
+                    ['key' => 'closure', 'label' => t('field.closure', 'Closure'), 'public' => true],
+                    ['key' => 'batch', 'label' => t('field.batch', 'Production batch'), 'public' => false],
+                ],
+            ],
+            DAT_ASSET_TYPE_NECKLACE => [
+                'key' => 'necklace',
+                'category' => 'wearables',
+                'icon' => 'fa-solid fa-gem',
+                'emoji' => "\u{1F4FF}",
+                'label' => t('type.necklace', 'Necklace'),
+                'fields' => [
+                    ['key' => 'material', 'label' => t('field.material', 'Material'), 'public' => true],
+                    ['key' => 'pendant', 'label' => t('field.pendant', 'Pendant shape'), 'public' => true],
+                    ['key' => 'chain_length', 'label' => t('field.chain_length', 'Chain length'), 'public' => true],
+                    ['key' => 'color', 'label' => t('field.color', 'Colour'), 'public' => true],
+                    ['key' => 'batch', 'label' => t('field.batch', 'Production batch'), 'public' => false],
+                ],
+            ],
+            DAT_ASSET_TYPE_LANYARD => [
+                'key' => 'lanyard',
+                'category' => 'wearables',
+                'icon' => 'fa-solid fa-id-badge',
+                'emoji' => "\u{1F3F7}",
+                'label' => t('type.lanyard', 'Lanyard'),
+                'fields' => [
+                    ['key' => 'material', 'label' => t('field.material', 'Material'), 'public' => true],
+                    ['key' => 'width', 'label' => t('field.width', 'Width'), 'public' => true],
+                    ['key' => 'color', 'label' => t('field.color', 'Colour'), 'public' => true],
+                    ['key' => 'fitting', 'label' => t('field.fitting', 'Fitting'), 'public' => true],
+                    ['key' => 'batch', 'label' => t('field.batch', 'Production batch'), 'public' => false],
+                ],
+            ],
+            DAT_ASSET_TYPE_KEYCHAIN => [
+                'key' => 'keychain',
+                'category' => 'carry',
+                'icon' => 'fa-solid fa-key',
+                'emoji' => "\u{1F511}",
+                'label' => t('type.keychain', 'Keychain'),
+                'fields' => [
+                    ['key' => 'material', 'label' => t('field.material', 'Material'), 'public' => true],
+                    ['key' => 'shape', 'label' => t('field.shape', 'Shape'), 'public' => true],
+                    ['key' => 'color', 'label' => t('field.color', 'Colour'), 'public' => true],
+                    ['key' => 'batch', 'label' => t('field.batch', 'Production batch'), 'public' => false],
+                ],
+            ],
+            DAT_ASSET_TYPE_MINI_TAG => [
+                'key' => 'mini_tag',
+                'category' => 'carry',
+                'icon' => 'fa-solid fa-certificate',
+                'emoji' => "\u{1F3F7}",
+                'label' => t('type.mini_tag', 'Mini tag'),
+                'fields' => [
+                    ['key' => 'material', 'label' => t('field.material', 'Material'), 'public' => true],
+                    ['key' => 'size', 'label' => t('field.size', 'Size'), 'public' => true],
+                    ['key' => 'attachment', 'label' => t('field.attachment', 'Attachment'), 'public' => true],
+                    ['key' => 'color', 'label' => t('field.color', 'Colour'), 'public' => true],
+                    ['key' => 'batch', 'label' => t('field.batch', 'Production batch'), 'public' => false],
+                ],
+            ],
             DAT_ASSET_TYPE_PET => [
                 'key' => 'pet',
+                'category' => 'assets',
                 'icon' => 'fa-solid fa-dog',
                 'emoji' => "\u{1F415}",
                 'label' => t('type.pet', 'Pet'),
@@ -67,35 +174,9 @@ if (!function_exists('dat_asset_types')) {
                     ['key' => 'microchip', 'label' => t('field.microchip', 'Microchip number'), 'public' => false],
                 ],
             ],
-            DAT_ASSET_TYPE_BICYCLE => [
-                'key' => 'bicycle',
-                'icon' => 'fa-solid fa-bicycle',
-                'emoji' => "\u{1F6B2}",
-                'label' => t('type.bicycle', 'Bicycle'),
-                'fields' => [
-                    ['key' => 'brand', 'label' => t('field.brand', 'Brand'), 'public' => true],
-                    ['key' => 'model', 'label' => t('field.model', 'Model'), 'public' => true],
-                    ['key' => 'color', 'label' => t('field.color', 'Colour'), 'public' => true],
-                    ['key' => 'frame_size', 'label' => t('field.frame_size', 'Frame size'), 'public' => true],
-                    ['key' => 'serial', 'label' => t('field.serial', 'Serial number'), 'public' => false],
-                ],
-            ],
-            DAT_ASSET_TYPE_VEHICLE => [
-                'key' => 'vehicle',
-                'icon' => 'fa-solid fa-car',
-                'emoji' => "\u{1F697}",
-                'label' => t('type.vehicle', 'Vehicle'),
-                'fields' => [
-                    ['key' => 'brand', 'label' => t('field.brand', 'Brand'), 'public' => true],
-                    ['key' => 'model', 'label' => t('field.model', 'Model'), 'public' => true],
-                    ['key' => 'year', 'label' => t('field.year', 'Year'), 'public' => true],
-                    ['key' => 'color', 'label' => t('field.color', 'Colour'), 'public' => true],
-                    ['key' => 'license_plate', 'label' => t('field.license_plate', 'Licence plate'), 'public' => false],
-                    ['key' => 'vin', 'label' => t('field.vin', 'VIN'), 'public' => false],
-                ],
-            ],
             DAT_ASSET_TYPE_CLOTHING => [
                 'key' => 'clothing',
+                'category' => 'assets',
                 'icon' => 'fa-solid fa-shirt',
                 'emoji' => "\u{1F455}",
                 'label' => t('type.clothing', 'Clothing'),
@@ -104,35 +185,6 @@ if (!function_exists('dat_asset_types')) {
                     ['key' => 'model', 'label' => t('field.model', 'Model'), 'public' => true],
                     ['key' => 'size', 'label' => t('field.size', 'Size'), 'public' => true],
                     ['key' => 'color', 'label' => t('field.color', 'Colour'), 'public' => true],
-                ],
-            ],
-            DAT_ASSET_TYPE_ITEM => [
-                'key' => 'item',
-                'icon' => 'fa-solid fa-box',
-                'emoji' => "\u{1F4E6}",
-                'label' => t('type.item', 'Item'),
-                'fields' => [
-                    ['key' => 'category', 'label' => t('field.category', 'Category'), 'public' => true],
-                    ['key' => 'brand', 'label' => t('field.brand', 'Brand'), 'public' => true],
-                    ['key' => 'model', 'label' => t('field.model', 'Model'), 'public' => true],
-                    ['key' => 'color', 'label' => t('field.color', 'Colour'), 'public' => true],
-                    ['key' => 'serial', 'label' => t('field.serial', 'Serial number'), 'public' => false],
-                    ['key' => 'purchase_date', 'label' => t('field.purchase_date', 'Purchase date'), 'public' => false],
-                ],
-            ],
-            DAT_ASSET_TYPE_INDUSTRIAL => [
-                'key' => 'industrial',
-                'icon' => 'fa-solid fa-industry',
-                'emoji' => "\u{1F3ED}",
-                'label' => t('type.industrial', 'Industrial asset'),
-                'fields' => [
-                    ['key' => 'manufacturer', 'label' => t('field.manufacturer', 'Manufacturer'), 'public' => true],
-                    ['key' => 'model', 'label' => t('field.model', 'Model'), 'public' => true],
-                    ['key' => 'category', 'label' => t('field.category', 'Category'), 'public' => true],
-                    ['key' => 'machine_id', 'label' => t('field.machine_id', 'Machine ID'), 'public' => false],
-                    ['key' => 'serial', 'label' => t('field.serial', 'Serial number'), 'public' => false],
-                    ['key' => 'location', 'label' => t('field.location', 'Location'), 'public' => false],
-                    ['key' => 'service_contact', 'label' => t('field.service_contact', 'Service contact'), 'public' => false],
                 ],
             ],
         ];
@@ -154,12 +206,81 @@ if (!function_exists('dat_asset_type_meta')) {
         $types = dat_asset_types();
         $type = (int) $type;
         return $types[$type] ?? [
-            'key' => 'item',
+            'key' => 'other',
+            'category' => 'assets',
             'icon' => 'fa-solid fa-box',
             'emoji' => "\u{1F4E6}",
-            'label' => t('type.item', 'Item'),
+            'label' => t('type.other', 'Other'),
             'fields' => [],
         ];
+    }
+}
+
+/**
+ * The catalogue is grouped so the interface can present families of products
+ * instead of one long list: signage, wearables, carry items, and the assets
+ * people tag directly.
+ *
+ * @return array<string, array{key: string, label: string, hint: string, types: int[]}>
+ */
+if (!function_exists('dat_asset_type_categories')) {
+    function dat_asset_type_categories()
+    {
+        return [
+            'signage' => [
+                'key' => 'signage',
+                'label' => t('category.signage', 'Signage and display'),
+                'hint' => t('category.signage.hint', 'Boards and posters that carry the code where people stand in front of them.'),
+                'types' => [DAT_ASSET_TYPE_MENU_BOARD, DAT_ASSET_TYPE_POSTER],
+            ],
+            'wearables' => [
+                'key' => 'wearables',
+                'label' => t('category.wearables', 'Worn on the body'),
+                'hint' => t('category.wearables.hint', 'Chips on the wrist, around the neck or on a lanyard.'),
+                'types' => [DAT_ASSET_TYPE_WRISTBAND, DAT_ASSET_TYPE_NECKLACE, DAT_ASSET_TYPE_LANYARD],
+            ],
+            'carry' => [
+                'key' => 'carry',
+                'label' => t('category.carry', 'Carried and attached'),
+                'hint' => t('category.carry.hint', 'Keychains and small tags that live on keys, bags and equipment.'),
+                'types' => [DAT_ASSET_TYPE_KEYCHAIN, DAT_ASSET_TYPE_MINI_TAG],
+            ],
+            'assets' => [
+                'key' => 'assets',
+                'label' => t('category.assets', 'Assets you tag directly'),
+                'hint' => t('category.assets.hint', 'Living things and clothing, tagged with the details that identify them.'),
+                'types' => [DAT_ASSET_TYPE_PET, DAT_ASSET_TYPE_CLOTHING],
+            ],
+        ];
+    }
+}
+
+/** Asset types in catalogue order (category by category). */
+if (!function_exists('dat_asset_types_ordered')) {
+    function dat_asset_types_ordered()
+    {
+        $types = dat_asset_types();
+        $ordered = [];
+
+        foreach (dat_asset_type_categories() as $category) {
+            foreach ($category['types'] as $typeId) {
+                if (isset($types[$typeId])) {
+                    $ordered[$typeId] = $types[$typeId];
+                }
+            }
+        }
+
+        return $ordered ?: $types;
+    }
+}
+
+if (!function_exists('dat_asset_type_category')) {
+    function dat_asset_type_category($type)
+    {
+        $meta = dat_asset_type_meta($type);
+        $categories = dat_asset_type_categories();
+        $key = $meta['category'] ?? 'assets';
+        return $categories[$key] ?? $categories['assets'];
     }
 }
 

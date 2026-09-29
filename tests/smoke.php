@@ -149,17 +149,21 @@ check('public projection drops the internal id', !array_key_exists('id', $public
 check('public projection drops the owner id', !array_key_exists('owner_id', $public));
 check('public metadata excludes nothing here', count($public['metadata']) === 3, (string) count($public['metadata']));
 
-$vehicleRow = [
-    'public_id' => 'CARTAG24',
-    'type' => DAT_ASSET_TYPE_VEHICLE,
-    'name' => 'Estate car',
+$boardRow = [
+    'public_id' => 'MENUTAG2',
+    'type' => DAT_ASSET_TYPE_MENU_BOARD,
+    'name' => 'Café menu board',
     'description' => '',
     'status' => DAT_ASSET_STATUS_ACTIVE,
-    'metadata_json' => json_encode(['brand' => 'BMW', 'vin' => 'WBADT43452G296760', 'license_plate' => 'B-AB 1234']),
+    'metadata_json' => json_encode([
+        'material' => 'Acrylic',
+        'wifi_network' => 'Cafe-Guest',
+        'wifi_password' => 'Sonnenaufgang-2026',
+    ]),
 ];
-$vehiclePublic = dat_public_asset($vehicleRow);
-check('private fields stay out of the public page', !isset($vehiclePublic['metadata']['VIN']) && !isset($vehiclePublic['metadata']['Licence plate']));
-check('public fields still render', isset($vehiclePublic['metadata']['Brand']));
+$boardPublic = dat_public_asset($boardRow);
+check('private fields stay out of the public page', !isset($boardPublic['metadata']['Wi-Fi password']));
+check('public fields still render', isset($boardPublic['metadata']['Material'], $boardPublic['metadata']['Guest Wi-Fi name']));
 
 /* ------------------------------------------------------------- URLs ---- */
 
@@ -173,9 +177,25 @@ check('assets resolve to the asset directory', strpos(dat_asset_url('css/portal.
 echo PHP_EOL . 'Worked examples' . PHP_EOL;
 
 $catalog = dat_demo_catalog();
-check('catalog has six entries', count($catalog) === 6, (string) count($catalog));
-check('catalog covers six distinct types', count(array_unique(array_column($catalog, 'type'))) === 6);
-check('catalog type IDs are known', array_diff(array_column($catalog, 'type'), dat_asset_type_ids()) === []);
+$configuredTypes = dat_asset_type_ids();
+$catalogTypes = array_column($catalog, 'type');
+check('catalog covers every configured type', array_diff($configuredTypes, $catalogTypes) === [],
+    implode(',', array_diff($configuredTypes, $catalogTypes)));
+check('catalog adds no unknown types', array_diff($catalogTypes, $configuredTypes) === []);
+check('every type belongs to exactly one category', (static function () {
+    $seen = [];
+    foreach (dat_asset_type_categories() as $category) {
+        foreach ($category['types'] as $typeId) {
+            $seen[] = $typeId;
+        }
+    }
+    $types = dat_asset_type_ids();
+    sort($seen);
+    sort($types);
+    return $seen === $types && count($seen) === count(array_unique($seen)) && $seen !== [];
+})(), 'categories do not cover the type list exactly');
+check('catalog entries name an image file', array_filter(array_column($catalog, 'image'), static fn ($value) => trim((string) $value) === '') === []);
+check('catalog image names are safe', array_filter(array_column($catalog, 'image'), static fn ($value) => preg_match('/^[a-z0-9-]+\.(jpg|png|webp)$/', $value) !== 1) === []);
 
 $demoIds = array_column($catalog, 'public_id');
 check('demo public IDs are unique', count(array_unique($demoIds)) === count($demoIds));

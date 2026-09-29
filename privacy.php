@@ -17,17 +17,28 @@ $unread = $user !== null ? dat_unread_message_count($user['id']) : 0;
 // One row per asset type, derived from the same field definitions used when
 // rendering a tag page.
 $typeFields = [];
-foreach (dat_asset_types() as $type) {
-    $public = [];
-    $private = [];
-    foreach ($type['fields'] as $field) {
-        if (!empty($field['public'])) {
-            $public[] = $field['label'];
-        } else {
-            $private[] = $field['label'];
+foreach (dat_asset_type_categories() as $category) {
+    foreach ($category['types'] as $typeId) {
+        $type = dat_asset_types()[$typeId] ?? null;
+        if ($type === null) {
+            continue;
         }
+        $public = [];
+        $private = [];
+        foreach ($type['fields'] as $field) {
+            if (!empty($field['public'])) {
+                $public[] = $field['label'];
+            } else {
+                $private[] = $field['label'];
+            }
+        }
+        $typeFields[] = [
+            'category' => $category['label'],
+            'label' => $type['label'],
+            'public' => $public,
+            'private' => $private,
+        ];
     }
-    $typeFields[] = ['label' => $type['label'], 'public' => $public, 'private' => $private];
 }
 
 dat_page_start([
@@ -77,7 +88,10 @@ dat_page_start([
                     <tbody>
                         <?php foreach ($typeFields as $row): ?>
                             <tr>
-                                <th scope="row"><?= e($row['label']) ?></th>
+                                <th scope="row">
+                                    <?= e($row['label']) ?>
+                                    <span class="table-note"><?= e($row['category']) ?></span>
+                                </th>
                                 <td>
                                     <?= e(t('common.name_type_description', 'Name, type, description, photos, status')) ?>
                                     <?php if ($row['public']): ?>, <?= e(implode(', ', $row['public'])) ?><?php endif; ?>

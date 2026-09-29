@@ -308,14 +308,17 @@ $public = dat_public_asset($asset);
 check('public projection hides the internal id', !isset($public['id'], $public['owner_id'], $public['metadata_json']));
 check('public projection keeps public metadata', ($public['metadata']['Breed'] ?? '') === 'Golden Retriever');
 
-$vehicle = dat_create_asset($owner['id'], DAT_ASSET_TYPE_VEHICLE, 'Estate car', '', [
-    'brand' => 'BMW',
-    'vin' => 'WBADT43452G296760',
-    'license_plate' => 'B-AB 1234',
+$board = dat_create_asset($owner['id'], DAT_ASSET_TYPE_MENU_BOARD, 'Café menu board', '', [
+    'material' => 'Acrylic',
+    'location' => 'Counter',
+    'wifi_network' => 'Cafe-Guest',
+    'wifi_password' => 'Sonnenaufgang-2026',
 ]);
-$vehiclePublic = dat_public_asset($vehicle);
-check('private fields are hidden on the public page', !isset($vehiclePublic['metadata']['VIN']) && !isset($vehiclePublic['metadata']['Licence plate']));
-check('private fields are still stored', dat_asset_metadata($vehicle)['vin'] === 'WBADT43452G296760');
+$boardPublic = dat_public_asset($board);
+check('private fields are hidden on the public page', !isset($boardPublic['metadata']['Wi-Fi password']));
+check('public product fields still render', ($boardPublic['metadata']['Material'] ?? '') === 'Acrylic'
+    && ($boardPublic['metadata']['Guest Wi-Fi name'] ?? '') === 'Cafe-Guest');
+check('private fields are still stored', dat_asset_metadata($board)['wifi_password'] === 'Sonnenaufgang-2026');
 
 $counts = dat_asset_counts($owner['id']);
 check('asset counts add up', $counts['total'] === 2 && $counts['lost'] === 1, json_encode($counts));
@@ -395,8 +398,8 @@ $deleted = dat_asset_by_public_id($asset['public_id']);
 check('the public link still resolves after deletion', $deleted !== null);
 check('but the tag page hides the asset', dat_asset_is_public($deleted['status']) === false);
 check('deleted rows disappear from the dashboard', count(dat_assets_for_owner($owner['id'])) === 1);
-check('another account cannot delete an asset', dat_soft_delete_asset($vehicle['id'], $second['id']) === true); // no-op, row untouched
-check('the vehicle is still active', (int) dat_asset_for_owner($vehicle['id'], $owner['id'])['status'] === DAT_ASSET_STATUS_ACTIVE);
+check('another account cannot delete an asset', dat_soft_delete_asset($board['id'], $second['id']) === true); // no-op, row untouched
+check('the menu board is still active', (int) dat_asset_for_owner($board['id'], $owner['id'])['status'] === DAT_ASSET_STATUS_ACTIVE);
 
 /* ---------------------------------------------------- guest sessions --- */
 
@@ -414,7 +417,7 @@ check('guest account cannot sign in', dat_authenticate($guest['email'], 'anythin
 check('guest session row exists', dat_one('SELECT id FROM dat_guest_sessions WHERE user_id = ?', [$guest['id']]) !== null);
 check('guest session can create one tag', dat_guest_can_create() === true);
 
-$guestAsset = dat_create_asset($guest['id'], DAT_ASSET_TYPE_ITEM, 'Guest keys', 'Keys found in the park.', ['category' => 'Keys']);
+$guestAsset = dat_create_asset($guest['id'], DAT_ASSET_TYPE_KEYCHAIN, 'Guest keys', 'Keys found in the park.', ['material' => 'Acrylic', 'batch' => 'KC-TEST-01']);
 check('guest asset was created', $guestAsset !== null && dat_is_valid_public_id($guestAsset['public_id']));
 check('guest asset is publicly reachable', dat_asset_by_public_id($guestAsset['public_id']) !== null);
 check('guest tag has QR and NFC tags', count(dat_asset_tags($guestAsset['id'])) === 2);
@@ -437,7 +440,7 @@ check('the guest session is cleared from the session', dat_guest_user() === null
 // Expiry: an unclaimed guest account is removed with its assets.
 $stale = dat_create_guest_session();
 $staleUser = $stale['user'];
-dat_create_asset($staleUser['id'], DAT_ASSET_TYPE_ITEM, 'Abandoned tag', '', []);
+dat_create_asset($staleUser['id'], DAT_ASSET_TYPE_MINI_TAG, 'Abandoned tag', '', []);
 dat_exec('UPDATE dat_guest_sessions SET expires_at = ? WHERE user_id = ?', ['2000-01-01 00:00:00', $staleUser['id']]);
 check('expired guest sessions are purged', dat_purge_guest_sessions() >= 1);
 check('purged guest account is gone', dat_user_by_id($staleUser['id']) === null);

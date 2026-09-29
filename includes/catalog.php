@@ -1,16 +1,19 @@
 <?php
 /**
- * Worked examples, one per asset type.
+ * Worked examples, one per catalogue item.
  *
- * The same catalog feeds three consumers, so the illustrations can never drift
+ * The same catalog feeds four consumers, so the illustrations can never drift
  * away from reality:
  *   1. scripts/seed-demo.php creates these assets on the server, using the
  *      fixed public IDs below.
  *   2. use-cases.php renders each entry as a live preview, links to its real
  *      tag page, and derives the public/private lists from the same metadata
  *      the portal stores.
- *   3. tests/smoke.php checks that every demo ID is a valid public ID and that
- *      all six asset types are covered.
+ *   3. tests/smoke.php checks that every demo ID is valid, that the catalog
+ *      covers every configured asset type, and that no private value leaks.
+ *   4. The `image` key names the optional product photo in
+ *      assets/img/products/. When the file is missing the emoji mark is used,
+ *      so real photos can be dropped in at any time.
  */
 
 if (!defined('LINKTEC_SECURE')) {
@@ -23,7 +26,7 @@ require_once __DIR__ . '/assets.php';
 /**
  * @return array<string, array{
  *   key: string, public_id: string, type: int, name: string,
- *   description: string, metadata: array<string,string>
+ *   description: string, metadata: array<string,string>, image: string
  * }>
  */
 if (!function_exists('dat_demo_catalog')) {
@@ -35,12 +38,116 @@ if (!function_exists('dat_demo_catalog')) {
         }
 
         $catalog = [
+            'menu_board' => [
+                'key' => 'menu_board',
+                'public_id' => 'MENUTAG2',
+                'type' => DAT_ASSET_TYPE_MENU_BOARD,
+                'name' => t('case.menu_board.name', 'Café menu board'),
+                'description' => t('case.menu_board.description', 'Acrylic board at the counter. The code opens the current menu, and the Wi-Fi card next to it is meant for guests in the room.'),
+                'image' => 'menu-board.jpg',
+                'metadata' => [
+                    'material' => t('case.menu_board.material', 'Acrylic, 4 mm'),
+                    'size' => 'A4, 210 × 297 mm',
+                    'location' => t('case.menu_board.location', 'Counter, next to the till'),
+                    'menu_url' => 'https://menu.example.com/cafe',
+                    'wifi_network' => 'Cafe-Guest',
+                    'wifi_password' => 'Sonnenaufgang-2026',
+                ],
+            ],
+            'poster' => [
+                'key' => 'poster',
+                'public_id' => 'PSTTAG24',
+                'type' => DAT_ASSET_TYPE_POSTER,
+                'name' => t('case.poster.name', 'Shop window poster'),
+                'description' => t('case.poster.description', 'Poster in the window, with the chip behind the paper so a tap opens the current offers.'),
+                'image' => 'poster.jpg',
+                'metadata' => [
+                    'material' => t('case.poster.material', 'Paper on a PVC core'),
+                    'size' => 'DIN A2, 420 × 594 mm',
+                    'location' => t('case.poster.location', 'Shop window, left pane'),
+                    'campaign_id' => 'SUMMER-26',
+                ],
+            ],
+            'wristband' => [
+                'key' => 'wristband',
+                'public_id' => 'WRSTAG24',
+                'type' => DAT_ASSET_TYPE_WRISTBAND,
+                'name' => t('case.wristband.name', 'Festival wristband'),
+                'description' => t('case.wristband.description', 'Silicone wristband for day guests. A tap at the gate shows the booking it belongs to.'),
+                'image' => 'wristband.jpg',
+                'metadata' => [
+                    'material' => t('case.wristband.material', 'Silicone'),
+                    'color' => t('case.wristband.color', 'Teal'),
+                    'closure' => t('case.wristband.closure', 'Snap closure'),
+                    'batch' => 'WB-2026-04',
+                ],
+            ],
+            'necklace' => [
+                'key' => 'necklace',
+                'public_id' => 'NCKTAG24',
+                'type' => DAT_ASSET_TYPE_NECKLACE,
+                'name' => t('case.necklace.name', 'Pet pendant'),
+                'description' => t('case.necklace.description', 'Small steel pendant for a collar or a chain, light enough for every day.'),
+                'image' => 'necklace.jpg',
+                'metadata' => [
+                    'material' => t('case.necklace.material', 'Stainless steel'),
+                    'pendant' => t('case.necklace.pendant', 'Round, 25 mm'),
+                    'chain_length' => '50 cm',
+                    'color' => t('case.necklace.color', 'Brushed steel'),
+                    'batch' => 'NK-2026-01',
+                ],
+            ],
+            'lanyard' => [
+                'key' => 'lanyard',
+                'public_id' => 'LNYTAG24',
+                'type' => DAT_ASSET_TYPE_LANYARD,
+                'name' => t('case.lanyard.name', 'Staff lanyard'),
+                'description' => t('case.lanyard.description', 'Lanyard with a safety release, used for staff cards and visitor passes.'),
+                'image' => 'lanyard.jpg',
+                'metadata' => [
+                    'material' => t('case.lanyard.material', 'Recycled polyester'),
+                    'width' => '20 mm',
+                    'color' => t('case.lanyard.color', 'Navy'),
+                    'fitting' => t('case.lanyard.fitting', 'Breakaway clip'),
+                    'batch' => 'LY-2026-02',
+                ],
+            ],
+            'keychain' => [
+                'key' => 'keychain',
+                'public_id' => 'KEYTAG24',
+                'type' => DAT_ASSET_TYPE_KEYCHAIN,
+                'name' => t('case.keychain.name', 'Acrylic keychain'),
+                'description' => t('case.keychain.description', 'Keychain with the code printed on the back and a ring that survives a keyring.'),
+                'image' => 'keychain.jpg',
+                'metadata' => [
+                    'material' => t('case.keychain.material', 'Acrylic'),
+                    'shape' => t('case.keychain.shape', 'Rounded rectangle, 45 × 70 mm'),
+                    'color' => t('case.keychain.color', 'Clear with white print'),
+                    'batch' => 'KC-2026-03',
+                ],
+            ],
+            'mini_tag' => [
+                'key' => 'mini_tag',
+                'public_id' => 'TNYTAG24',
+                'type' => DAT_ASSET_TYPE_MINI_TAG,
+                'name' => t('case.mini_tag.name', 'Mini tag'),
+                'description' => t('case.mini_tag.description', 'Fingernail-sized label for small things: a tool box, a cable drum, a bag zip.'),
+                'image' => 'mini-tag.jpg',
+                'metadata' => [
+                    'material' => t('case.mini_tag.material', 'Laminated PET'),
+                    'size' => '15 × 25 mm',
+                    'attachment' => t('case.mini_tag.attachment', 'Adhesive or loop'),
+                    'color' => t('case.mini_tag.color', 'Black print on white'),
+                    'batch' => 'MT-2026-05',
+                ],
+            ],
             'pet' => [
                 'key' => 'pet',
                 'public_id' => 'DEMTAG24',
                 'type' => DAT_ASSET_TYPE_PET,
                 'name' => 'Lucky',
                 'description' => t('case.pet.description', 'Golden Retriever, male, chipped. Friendly with children, shy in traffic.'),
+                'image' => 'pet.jpg',
                 'metadata' => [
                     'animal' => t('field.animal.value_dog', 'Dog'),
                     'breed' => 'Golden Retriever',
@@ -49,77 +156,18 @@ if (!function_exists('dat_demo_catalog')) {
                     'microchip' => '276098104512377',
                 ],
             ],
-            'bicycle' => [
-                'key' => 'bicycle',
-                'public_id' => 'RADTAG24',
-                'type' => DAT_ASSET_TYPE_BICYCLE,
-                'name' => 'Cube Reaction Hybrid',
-                'description' => t('case.bicycle.description', 'E-bike for the daily commute. The battery lock needs the key, so it is never parked overnight outside.'),
-                'metadata' => [
-                    'brand' => 'Cube',
-                    'model' => 'Reaction Hybrid',
-                    'color' => t('case.bicycle.colour', 'Black'),
-                    'frame_size' => 'L',
-                    'serial' => 'CUB-2024-884213',
-                ],
-            ],
-            'vehicle' => [
-                'key' => 'vehicle',
-                'public_id' => 'CARTAG24',
-                'type' => DAT_ASSET_TYPE_VEHICLE,
-                'name' => 'BMW 320i Touring',
-                'description' => t('case.vehicle.description', 'Family estate, usually in the same car park. Two child seats in the back.'),
-                'metadata' => [
-                    'brand' => 'BMW',
-                    'model' => '320i Touring',
-                    'year' => '2018',
-                    'color' => t('case.vehicle.colour', 'Black'),
-                    'license_plate' => 'B-AB 1234',
-                    'vin' => 'WBA8E11020K123456',
-                ],
-            ],
             'clothing' => [
                 'key' => 'clothing',
                 'public_id' => 'JAKTAG24',
                 'type' => DAT_ASSET_TYPE_CLOTHING,
-                'name' => 'Patagonia Down Jacket',
+                'name' => t('case.clothing.name', 'Patagonia Down Jacket'),
                 'description' => t('case.clothing.description', 'Club jacket with the badge on the chest. Used at training and on trips.'),
+                'image' => 'clothing.jpg',
                 'metadata' => [
                     'brand' => 'Patagonia',
                     'model' => 'Down Sweater',
                     'size' => 'M',
                     'color' => t('case.clothing.colour', 'Dark blue'),
-                ],
-            ],
-            'item' => [
-                'key' => 'item',
-                'public_id' => 'BAGTAG24',
-                'type' => DAT_ASSET_TYPE_ITEM,
-                'name' => 'Camera bag',
-                'description' => t('case.item.description', 'Grey shoulder bag with a tripod strap. Carries one camera body and two lenses.'),
-                'metadata' => [
-                    'category' => t('case.item.category', 'Camera bag'),
-                    'brand' => 'Peak Design',
-                    'model' => 'Everyday Sling',
-                    'color' => t('case.item.colour', 'Grey'),
-                    'serial' => 'PD-88213',
-                    'purchase_date' => '2024-03-11',
-                ],
-            ],
-            'industrial' => [
-                'key' => 'industrial',
-                'public_id' => 'MACTAG24',
-                'type' => DAT_ASSET_TYPE_INDUSTRIAL,
-                'name' => 'Hydraulic power unit HPU-7',
-                'description' => t('case.industrial.description', 'Mobile power unit that travels between sites. The maintenance interval is stamped on the plate.'),
-                'metadata' => [
-                    'manufacturer' => 'HydraTec',
-                    'model' => 'HPU-7',
-                    'category' => t('case.industrial.category', 'Power unit'),
-                    'machine_id' => 'M-2021-0147',
-                    'serial' => 'SN-4471-88',
-                    'location' => t('case.industrial.location', 'Bay 3, plant 2'),
-                    'service_contact' => t('case.industrial.service', 'Service desk, extension 240'),
                 ],
             ],
         ];
@@ -176,5 +224,26 @@ if (!function_exists('dat_demo_field_split')) {
         }
 
         return ['public' => $public, 'private' => $private];
+    }
+}
+
+/**
+ * URL of an optional product photo, or null when the file is not there yet.
+ * Drop photos into assets/img/products/ using the names from the catalog.
+ */
+if (!function_exists('dat_product_image_url')) {
+    function dat_product_image_url($file, $size = null)
+    {
+        $file = trim((string) $file);
+        if ($file === '' || strpos($file, '/') !== false || strpos($file, '..') !== false) {
+            return null;
+        }
+
+        $path = DAT_APP_ROOT . '/assets/img/products/' . $file;
+        if (!is_file($path) || !function_exists('dat_url')) {
+            return null;
+        }
+
+        return dat_url('assets/img/products/' . $file) . '?v=' . filemtime($path);
     }
 }

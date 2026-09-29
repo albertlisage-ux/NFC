@@ -312,33 +312,33 @@ for (const viewport of viewports) {
 
   const initial = await state();
   record('one panel is open on load', initial.visibleCount === 1, `${initial.visibleCount} of ${initial.total}`);
-  record('the first panel is the one open', initial.visibleId === 'type-pet', String(initial.visibleId));
-  record('the first tab is marked selected', initial.selectedHref === '#type-pet', String(initial.selectedHref));
+  record('the first panel is the one open', initial.visibleId === 'type-menu_board', String(initial.visibleId));
+  record('the first tab is marked selected', initial.selectedHref === '#type-menu_board', String(initial.selectedHref));
 
-  // Click the "Item" tab, the exact case from the report.
-  await page.click('[role="tab"][aria-controls="type-item"]');
+  // Click a tab from a different family than the one on screen.
+  await page.click('[role="tab"][aria-controls="type-keychain"]');
   await page.waitForTimeout(200);
   const afterClick = await state();
-  record('clicking Item opens only the Item panel', afterClick.visibleCount === 1 && afterClick.visibleId === 'type-item',
+  record('clicking a product opens only its panel', afterClick.visibleCount === 1 && afterClick.visibleId === 'type-keychain',
     `${afterClick.visibleCount} visible, ${afterClick.visibleId}`);
-  record('clicking Item marks its tab selected', afterClick.selectedHref === '#type-item', String(afterClick.selectedHref));
+  record('clicking a product marks its tab selected', afterClick.selectedHref === '#type-keychain', String(afterClick.selectedHref));
   record('the page did not grow into a full list', afterClick.pageHeight <= initial.pageHeight + 10,
     `${initial.pageHeight} -> ${afterClick.pageHeight}`);
 
   // Deep link straight to a panel.
-  await page.goto(base + '/use-cases#type-industrial', { waitUntil: 'domcontentloaded' });
+  await page.goto(base + '/use-cases#type-mini_tag', { waitUntil: 'domcontentloaded' });
   await page.waitForTimeout(200);
   const deepLink = await state();
-  record('deep link #type-industrial opens that panel', deepLink.visibleCount === 1 && deepLink.visibleId === 'type-industrial',
+  record('deep link opens the linked product', deepLink.visibleCount === 1 && deepLink.visibleId === 'type-mini_tag',
     `${deepLink.visibleCount} visible, ${deepLink.visibleId}`);
 
   // Keyboard navigation.
   await page.goto(base + '/use-cases', { waitUntil: 'domcontentloaded' });
-  await page.focus('[role="tab"][aria-controls="type-pet"]');
+  await page.focus('[role="tab"][aria-controls="type-menu_board"]');
   await page.keyboard.press('ArrowRight');
   await page.waitForTimeout(200);
   const afterKey = await state();
-  record('arrow key moves to the next type', afterKey.visibleId === 'type-bicycle', String(afterKey.visibleId));
+  record('arrow key moves to the next product', afterKey.visibleId === 'type-poster', String(afterKey.visibleId));
 
   await context.close();
 }

@@ -155,19 +155,25 @@ dat_page_start([
 
                             <div class="form-row">
                                 <label><?= e(t('asset.type', 'Type')) ?></label>
-                                <div class="type-select">
-                                    <?php foreach (dat_asset_types() as $typeId => $type): ?>
-                                        <label class="type-option">
-                                            <input type="radio" name="type" value="<?= (int) $typeId ?>"
-                                                   data-type-key="<?= e($type['key']) ?>"
-                                                   <?= (int) $typeId === DAT_ASSET_TYPE_PET ? 'checked' : '' ?>>
-                                            <span>
-                                                <em aria-hidden="true"><?= e($type['emoji']) ?></em>
-                                                <?= e($type['label']) ?>
-                                            </span>
-                                        </label>
-                                    <?php endforeach; ?>
-                                </div>
+                                <?php foreach (dat_asset_type_categories() as $category): ?>
+                                    <fieldset class="type-group-select">
+                                        <legend><?= e($category['label']) ?></legend>
+                                        <div class="type-select">
+                                            <?php foreach ($category['types'] as $typeId): ?>
+                                                <?php $type = dat_asset_types()[$typeId] ?? null; if ($type === null) continue; ?>
+                                                <label class="type-option">
+                                                    <input type="radio" name="type" value="<?= (int) $typeId ?>"
+                                                           data-type-key="<?= e($type['key']) ?>"
+                                                           <?= (int) $typeId === DAT_ASSET_TYPE_MENU_BOARD ? 'checked' : '' ?>>
+                                                    <span>
+                                                        <em aria-hidden="true"><?= e($type['emoji']) ?></em>
+                                                        <?= e($type['label']) ?>
+                                                    </span>
+                                                </label>
+                                            <?php endforeach; ?>
+                                        </div>
+                                    </fieldset>
+                                <?php endforeach; ?>
                             </div>
 
                             <div class="form-row">

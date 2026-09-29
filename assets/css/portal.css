@@ -428,7 +428,12 @@ code, kbd, samp {
 
 .type-tabs { margin-top: 26px; }
 
-.type-tablist { display: grid; grid-template-columns: repeat(6, 1fr); gap: 12px; }
+.type-group + .type-group { margin-top: 26px; }
+.type-group-head { margin-bottom: 12px; }
+.type-group-head h2 { font-size: 1.05rem; margin-bottom: 2px; }
+.type-group-head p { margin: 0; font-size: .88rem; color: var(--muted); }
+
+.type-tablist { display: grid; grid-template-columns: repeat(auto-fit, minmax(170px, 1fr)); gap: 12px; }
 .type-tab {
   display: flex; flex-direction: column; align-items: center; gap: 4px;
   padding: 16px 12px; text-align: center; color: inherit;
@@ -439,6 +444,18 @@ code, kbd, samp {
 .type-tab .type-tile-mark { font-size: 1.4rem; line-height: 1; }
 .type-tab-label { font-weight: 640; font-size: .92rem; }
 .type-tab-hint { font-size: .74rem; color: var(--muted); }
+.type-tab-media { display: grid; place-items: center; width: 100%; min-height: 64px; margin-bottom: 6px; }
+.type-tab-media img {
+  width: 100%; max-width: 180px; aspect-ratio: 4 / 3; object-fit: cover;
+  border-radius: 10px; border: 1px solid var(--line-soft);
+}
+
+/* Grouped product picker in the owner forms. */
+.type-group-select { border: 0; padding: 0; margin: 0 0 14px; }
+.type-group-select legend {
+  font-size: .78rem; text-transform: uppercase; letter-spacing: .08em;
+  color: var(--muted); font-weight: 700; padding: 0 0 8px;
+}
 
 /* The selected tab is the one whose panel is targeted, or the first one when
    the page was opened without a fragment. */
@@ -487,6 +504,18 @@ code, kbd, samp {
 .example-grid { display: grid; grid-template-columns: 1fr 380px; gap: 44px; align-items: start; }
 .example-grid > * { min-width: 0; }
 .example-preview { position: sticky; top: 92px; }
+.product-shot { margin: 0 0 16px; }
+.product-shot img {
+  width: 100%; aspect-ratio: 4 / 3; object-fit: cover;
+  border-radius: var(--r-card); border: 1px solid var(--line);
+}
+.product-shot-placeholder {
+  display: flex; gap: 12px; align-items: center;
+  background: var(--canvas); border: 1px dashed var(--line);
+  border-radius: var(--r-card); padding: 16px; margin: 0 0 16px;
+  font-size: .84rem; color: var(--muted);
+}
+.product-shot-placeholder .type-tile-mark { font-size: 1.4rem; }
 .example-situation {
   display: flex; gap: 10px; align-items: flex-start;
   background: var(--accent-tint); border: 1px solid var(--accent-line); border-radius: var(--r-card);
