@@ -66,6 +66,13 @@ define('PORTAL_MESSAGE_RATE_LIMIT', max(1, (int) dat_env('PORTAL_MESSAGE_RATE_LI
 define('PORTAL_MESSAGE_RETENTION_DAYS', max(1, (int) dat_env('PORTAL_MESSAGE_RETENTION_DAYS', 90)));
 define('PORTAL_MAX_UPLOAD_BYTES', max(1024, (int) dat_env('PORTAL_MAX_UPLOAD_BYTES', 10485760)));
 
+/**
+ * Booth mode. At a trade fair every visitor shares one public IP, so the per-IP
+ * limits would stop the demo after a handful of people. Enable PORTAL_DEMO_MODE
+ * to lift them, and remember to switch it off afterwards.
+ */
+define('PORTAL_DEMO_MODE', in_array(strtolower((string) dat_env('PORTAL_DEMO_MODE', '0')), ['1', 'true', 'yes', 'on'], true));
+
 /** Public URL of this portal, without a trailing slash. */
 if (!function_exists('dat_request_is_https')) {
     function dat_request_is_https()

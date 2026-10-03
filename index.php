@@ -144,7 +144,7 @@ dat_json_ld([
                                 <?php if ($chipImage !== null): ?>
                                     <img src="<?= e($chipImage) ?>" alt="" loading="lazy" width="48" height="48">
                                 <?php else: ?>
-                                    <?= e($typeMeta['emoji']) ?>
+                                    <i class="<?= e($typeMeta['icon']) ?>" aria-hidden="true"></i>
                                 <?php endif; ?>
                             </span>
                             <span class="example-chip-body">
@@ -175,7 +175,7 @@ dat_json_ld([
                                 <?php $type = dat_asset_types()[$typeId] ?? null; if ($type === null) continue; ?>
                                 <li>
                                     <a href="<?= e(dat_url('use-cases')) ?>#type-<?= e($type['key']) ?>">
-                                        <span aria-hidden="true"><?= e($type['emoji']) ?></span>
+                                        <i class="<?= e($type['icon']) ?>" aria-hidden="true"></i>
                                         <?= e($type['label']) ?>
                                     </a>
                                 </li>

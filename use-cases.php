@@ -135,7 +135,7 @@ dat_page_start([
                                                 <?php if ($image !== null): ?>
                                                     <img src="<?= e($image) ?>" alt="" loading="lazy" width="40" height="40">
                                                 <?php else: ?>
-                                                    <?= e($type['emoji']) ?>
+                                                    <i class="<?= e($type['icon']) ?>" aria-hidden="true"></i>
                                                 <?php endif; ?>
                                             </span>
                                             <span class="catalog-item-body">
@@ -169,7 +169,7 @@ dat_page_start([
                                  aria-labelledby="tab-type-<?= e($entry['key']) ?>"
                                  tabindex="0">
                             <header class="example-head">
-                                <span class="tag-type-mark" aria-hidden="true"><?= e($typeMeta['emoji']) ?></span>
+                                <?= dat_type_mark($type, $image, 'tag-type-mark') ?>
                                 <div>
                                     <p class="eyebrow"><?= e($category['label']) ?> &middot; <?= e($typeMeta['label']) ?></p>
                                     <h3><?= e($entry['name']) ?></h3>
@@ -231,8 +231,8 @@ dat_page_start([
                                         </figure>
                                     <?php else: ?>
                                         <p class="product-shot-placeholder">
-                                            <span class="type-tile-mark" aria-hidden="true"><?= e($typeMeta['emoji']) ?></span>
-                                            <?= e(sprintf(t('cases.photo_slot', 'Product photo: drop %s into assets/img/products/'), $entry['image'])) ?>
+                                            <?= dat_type_mark($type, null, 'type-mark-lg') ?>
+                                            <span><?= e($typeMeta['label']) ?></span>
                                         </p>
                                     <?php endif; ?>
                                     <div class="tag-card-frame">

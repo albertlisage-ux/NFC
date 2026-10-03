@@ -124,6 +124,36 @@ if (!function_exists('dat_type_pill')) {
     }
 }
 
+/**
+ * Product mark: the real photo when the catalogue has one, otherwise the
+ * product icon. Emoji are deliberately not used on public pages, they make a
+ * catalogue look like a placeholder.
+ */
+if (!function_exists('dat_type_mark')) {
+    function dat_type_mark($type, $imageUrl = null, $extraClass = '')
+    {
+        $meta = dat_asset_type_meta($type);
+        $class = trim('type-mark ' . $extraClass);
+
+        if ($imageUrl !== null && $imageUrl !== '') {
+            return '<span class="' . e($class) . ' type-mark-photo">'
+                . '<img src="' . e($imageUrl) . '" alt="" loading="lazy">'
+                . '</span>';
+        }
+
+        return '<span class="' . e($class) . '"><i class="' . e($meta['icon']) . '" aria-hidden="true"></i></span>';
+    }
+}
+
+/** Product mark for a catalogue entry, using its photo when it exists. */
+if (!function_exists('dat_entry_mark')) {
+    function dat_entry_mark(array $entry, $extraClass = '')
+    {
+        require_once __DIR__ . '/catalog.php';
+        return dat_type_mark($entry['type'], dat_product_image_url($entry['image'] ?? null), $extraClass);
+    }
+}
+
 /* -------------------------------------------------------------------------
  * Public tag card (shared component)
  * ---------------------------------------------------------------------- */
@@ -150,7 +180,7 @@ if (!function_exists('dat_tag_card')) {
         ?>
         <article class="tag-card<?= $compact ? ' tag-card-compact' : '' ?>">
             <header class="tag-card-head">
-                <span class="tag-type-mark" aria-hidden="true"><?= e($typeMeta['emoji']) ?></span>
+                <?= dat_type_mark($asset['type'], null, 'tag-type-mark') ?>
                 <div class="tag-card-title">
                     <<?= $headingTag ?> class="tag-title"><?= e($asset['name']) ?></<?= $headingTag ?>>
                     <p><?= e($asset['type_label']) ?><?php
@@ -292,6 +322,7 @@ if (!function_exists('dat_page_start')) {
                 <a href="<?= e(dat_url('how-it-works')) ?>"><?= e(t('nav.how', 'How it works')) ?></a>
                 <a href="<?= e(dat_url('use-cases')) ?>"><?= e(t('nav.usecases', 'Use cases')) ?></a>
                 <a href="<?= e(dat_url('write-a-tag')) ?>"><?= e(t('nav.write', 'Write a tag')) ?></a>
+                <a href="<?= e(dat_url('demo')) ?>"><?= e(t('nav.demo', 'Live demo')) ?></a>
                 <a href="<?= e(dat_url('privacy')) ?>"><?= e(t('nav.privacy', 'Privacy')) ?></a>
             </nav>
 
@@ -325,6 +356,7 @@ if (!function_exists('dat_page_start')) {
             <a href="<?= e(dat_url('how-it-works')) ?>"><?= e(t('nav.how', 'How it works')) ?></a>
             <a href="<?= e(dat_url('use-cases')) ?>"><?= e(t('nav.usecases', 'Use cases')) ?></a>
             <a href="<?= e(dat_url('write-a-tag')) ?>"><?= e(t('nav.write', 'Write a tag')) ?></a>
+            <a href="<?= e(dat_url('demo')) ?>"><?= e(t('nav.demo', 'Live demo')) ?></a>
             <a href="<?= e(dat_url('privacy')) ?>"><?= e(t('nav.privacy', 'Privacy')) ?></a>
             <?php if ($user !== null): ?>
                 <a href="<?= e(dat_url('dashboard/index.php')) ?>"><?= e(t('nav.dashboard', 'Dashboard')) ?></a>
@@ -361,6 +393,7 @@ if (!function_exists('dat_page_end')) {
                 <a href="<?= e(dat_url('docs/imprint.php')) ?>"><?= e(t('footer.imprint', 'Imprint')) ?></a>
                 <a href="<?= e(dat_url('how-it-works')) ?>"><?= e(t('nav.how', 'How it works')) ?></a>
                 <a href="<?= e(dat_url('write-a-tag')) ?>"><?= e(t('nav.write', 'Write a tag')) ?></a>
+                <a href="<?= e(dat_url('demo')) ?>"><?= e(t('nav.demo', 'Live demo')) ?></a>
             </nav>
         </div>
         <div class="shell footer-note">

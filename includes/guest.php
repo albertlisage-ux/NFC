@@ -96,6 +96,10 @@ if (!function_exists('dat_create_guest_session')) {
 if (!function_exists('dat_guest_ip_limited')) {
     function dat_guest_ip_limited()
     {
+        if (PORTAL_DEMO_MODE) {
+            return false;
+        }
+
         $ipHash = dat_ip_hash();
         if ($ipHash === null) {
             return false;

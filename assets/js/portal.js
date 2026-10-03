@@ -63,6 +63,13 @@
     });
   });
 
+  // "Print this card" on the live demo page
+  document.querySelectorAll('[data-print]').forEach(function (button) {
+    button.addEventListener('click', function () {
+      window.print();
+    });
+  });
+
   // Character counter
   document.querySelectorAll('[data-counter]').forEach(function (field) {
     var output = document.querySelector(field.getAttribute('data-counter'));

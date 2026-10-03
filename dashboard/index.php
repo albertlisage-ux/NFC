@@ -61,7 +61,7 @@ dat_page_start([
                 <?php $typeMeta = dat_asset_type_meta($asset['type']); ?>
                 <article class="asset-card">
                     <div class="asset-card-head">
-                        <span class="tag-type-mark" aria-hidden="true"><?= e($typeMeta['emoji']) ?></span>
+                        <?= dat_type_mark($asset['type'], null, 'tag-type-mark') ?>
                         <div>
                             <h3><?= e($asset['name']) ?></h3>
                             <p><?= e(dat_asset_summary($asset)) ?></p>

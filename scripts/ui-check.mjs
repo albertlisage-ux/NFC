@@ -161,6 +161,7 @@ const pages = [
   { path: '/privacy', name: 'privacy' },
   { path: '/start', name: 'start' },
   { path: '/write-a-tag', name: 'write-a-tag' },
+  { path: '/demo', name: 'demo' },
   { path: '/account/login.php', name: 'login' },
   { path: '/account/register.php', name: 'register' },
 ];

@@ -105,7 +105,7 @@ dat_page_start([
 
             <div class="form-card">
                 <h1>
-                    <span class="tag-type-mark" aria-hidden="true"><?= e($typeMeta['emoji']) ?></span>
+                    <?= dat_type_mark($asset['type'], null, 'tag-type-mark') ?>
                     <?= e(t('found.heading', 'I found this asset')) ?>
                 </h1>
                 <p><?= e(t('found.intro', 'Write a short message. The owner sees it in their dashboard and can answer you here. No name, email or phone number is required.')) ?></p>

@@ -166,7 +166,7 @@ dat_page_start([
                                                            data-type-key="<?= e($type['key']) ?>"
                                                            <?= (int) $typeId === DAT_ASSET_TYPE_MENU_BOARD ? 'checked' : '' ?>>
                                                     <span>
-                                                        <em aria-hidden="true"><?= e($type['emoji']) ?></em>
+                                                        <em aria-hidden="true"><i class="<?= e($type['icon']) ?>"></i></em>
                                                         <?= e($type['label']) ?>
                                                     </span>
                                                 </label>

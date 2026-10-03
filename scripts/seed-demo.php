@@ -18,6 +18,7 @@ require_once __DIR__ . '/../config/db.php';
 require_once __DIR__ . '/../includes/assets.php';
 require_once __DIR__ . '/../includes/nfc.php';
 require_once __DIR__ . '/../includes/catalog.php';
+require_once __DIR__ . '/../includes/demo.php';
 
 if (PHP_SAPI !== 'cli') {
     http_response_code(403);
@@ -117,6 +118,78 @@ foreach (dat_demo_catalog() as $entry) {
 }
 
 echo PHP_EOL . 'Created: ' . $created . ', refreshed: ' . $reused . PHP_EOL;
+
+/*
+ * One realistic conversation on the showcase product, so the trade fair
+ * walkthrough has something to show before the first visitor types. Only
+ * added when the thread does not exist yet.
+ */
+$showcase = dat_demo_entry('keychain');
+if ($showcase !== null && dat_db_available()) {
+    $asset = dat_one(
+        'SELECT * FROM ' . dat_table('assets') . ' WHERE public_id = ? LIMIT 1',
+        [$showcase['public_id']]
+    );
+    if ($asset !== null) {
+        $expiresAt = date('Y-m-d H:i:s', time() + (PORTAL_MESSAGE_RETENTION_DAYS * 86400));
+        $finderMessage = dat_one(
+            'SELECT id, sender_token FROM ' . dat_table('messages') . '
+              WHERE asset_id = ? AND direction = ? ORDER BY created_at ASC LIMIT 1',
+            [$asset['id'], DAT_MESSAGE_DIRECTION_FINDER]
+        );
+
+        if ($finderMessage === null) {
+            $finderMessage = ['id' => dat_uuid(), 'sender_token' => bin2hex(random_bytes(16))];
+            dat_exec(
+                'INSERT INTO ' . dat_table('messages') . '
+                    (id, asset_id, sender_token, direction, content, status, created_at, expires_at)
+                 VALUES (?, ?, ?, ?, ?, ?, ?, ?)',
+                [
+                    $finderMessage['id'],
+                    $asset['id'],
+                    $finderMessage['sender_token'],
+                    DAT_MESSAGE_DIRECTION_FINDER,
+                    'I found a set of keys with this keychain in the doorway of house 4. The caretaker took them in, he is there until 6 pm.',
+                    DAT_MESSAGE_STATUS_READ,
+                    date('Y-m-d H:i:s', time() - 5400),
+                    $expiresAt,
+                ]
+            );
+            echo 'Seeded a finder message on ' . $showcase['public_id'] . PHP_EOL;
+        }
+
+        $ownerMessage = dat_one(
+            'SELECT id FROM ' . dat_table('messages') . '
+              WHERE asset_id = ? AND direction = ? LIMIT 1',
+            [$asset['id'], DAT_MESSAGE_DIRECTION_OWNER]
+        );
+
+        if ($ownerMessage === null) {
+            dat_exec(
+                'INSERT INTO ' . dat_table('messages') . '
+                    (id, asset_id, sender_token, direction, reply_to_id, content, status, created_at, expires_at)
+                 VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)',
+                [
+                    dat_uuid(),
+                    $asset['id'],
+                    $finderMessage['sender_token'],
+                    DAT_MESSAGE_DIRECTION_OWNER,
+                    $finderMessage['id'],
+                    'Thank you, I will collect them after work. Next coffee at the corner café is on me.',
+                    DAT_MESSAGE_STATUS_READ,
+                    date('Y-m-d H:i:s', time() - 4800),
+                    $expiresAt,
+                ]
+            );
+            dat_exec(
+                'UPDATE ' . dat_table('messages') . ' SET status = ? WHERE asset_id = ? AND direction = ?',
+                [DAT_MESSAGE_STATUS_REPLIED, $asset['id'], DAT_MESSAGE_DIRECTION_FINDER]
+            );
+            echo 'Seeded the owner reply on ' . $showcase['public_id'] . PHP_EOL;
+        }
+    }
+}
+
 echo 'Login: ' . DEMO_EMAIL . ' / ' . DEMO_PASSWORD . PHP_EOL;
 echo 'Tag pages:' . PHP_EOL;
 foreach (dat_demo_catalog() as $entry) {

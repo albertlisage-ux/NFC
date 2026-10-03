@@ -11,6 +11,7 @@ DirectoryIndex index.php
     RewriteRule ^privacy/?$ privacy.php [L]
     RewriteRule ^start/?$ start.php [L]
     RewriteRule ^write-a-tag/?$ write-a-tag.php [L]
+    RewriteRule ^demo/?$ demo.php [L]
 </IfModule>
 
 <FilesMatch "^\.env">

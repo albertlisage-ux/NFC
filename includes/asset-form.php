@@ -50,7 +50,7 @@ if (!function_exists('dat_asset_form')) {
                                            data-type-key="<?= e($type['key']) ?>"
                                            <?= (int) $typeId === $currentType ? 'checked' : '' ?>>
                                     <span>
-                                        <em aria-hidden="true"><?= e($type['emoji']) ?></em>
+                                        <em aria-hidden="true"><i class="<?= e($type['icon']) ?>"></i></em>
                                         <?= e($type['label']) ?>
                                     </span>
                                 </label>

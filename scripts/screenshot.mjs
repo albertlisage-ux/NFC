@@ -69,6 +69,7 @@ const targets = [
   { path: '/privacy', name: 'privacy', full: true },
   { path: '/start', name: 'start', full: true },
   { path: '/write-a-tag', name: 'write-a-tag', full: true },
+  { path: '/demo', name: 'demo', full: false },
   { path: '/account/login.php', name: 'login' },
   { path: '/account/register.php', name: 'register' },
   { path: '/docs/imprint.php', name: 'imprint' },

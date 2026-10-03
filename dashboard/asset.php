@@ -80,7 +80,7 @@ dat_page_start([
 
     <div class="page-head">
         <div>
-            <h1><?= e($typeMeta['emoji']) ?> <?= e($asset['name']) ?></h1>
+            <h1><?= e($asset['name']) ?></h1>
             <p><?= e(dat_asset_type_label($asset['type'])) ?> <?= dat_status_pill($asset['status']) ?></p>
         </div>
         <div class="btn-group">

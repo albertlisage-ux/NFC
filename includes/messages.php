@@ -46,6 +46,10 @@ if (!function_exists('dat_sender_token')) {
 if (!function_exists('dat_message_rate_limited')) {
     function dat_message_rate_limited($assetId)
     {
+        if (PORTAL_DEMO_MODE) {
+            return false;
+        }
+
         $ipHash = dat_ip_hash();
         if ($ipHash === null) {
             return false;

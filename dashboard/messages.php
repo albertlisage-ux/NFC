@@ -47,7 +47,7 @@ dat_page_start([
                     ?>
                     <li>
                         <a class="thread-link" href="<?= e($link) ?>">
-                            <span class="tag-type-mark" aria-hidden="true"><?= e(dat_asset_type_meta($thread['asset_type'])['emoji']) ?></span>
+                            <?= dat_type_mark((int) $thread['asset_type'], null, 'tag-type-mark') ?>
                             <span class="thread-body">
                                 <strong><?= e($thread['asset_name']) ?></strong>
                                 <span class="thread-preview"><?= e(mb_substr(trim((string) $thread['preview']), 0, 120)) ?></span>
