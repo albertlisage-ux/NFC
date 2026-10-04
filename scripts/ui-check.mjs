@@ -484,6 +484,42 @@ for (const viewport of viewports) {
         report.stepSources.join(', ') || 'no picture tiles found');
       record('home: hero follows the header directly', report.heroOffset >= 0 && report.heroOffset < 90,
         `${report.heroOffset}px (${report.heroGeometry})`);
+
+      // The guest Wi-Fi tile draws the code itself. A cropped or shrunken code
+      // still looks perfectly fine in a screenshot and silently stops working,
+      // so the rendered card is decoded here, in a real browser.
+      const codeCard = await page.$('.tile-media-code .code-card');
+      if (codeCard !== null) {
+        const shot = await codeCard.screenshot();
+        const decoded = await page.evaluate(async (base64) => {
+          if (typeof BarcodeDetector === 'undefined') return null;
+          const image = new Image();
+          image.src = 'data:image/png;base64,' + base64;
+          await image.decode();
+          const detector = new BarcodeDetector({ formats: ['qr_code'] });
+          return (await detector.detect(image)).map((code) => code.rawValue);
+        }, shot.toString('base64'));
+        record('home: the guest Wi-Fi code still scans',
+          decoded === null || decoded.some((value) => value.startsWith('WIFI:')),
+          decoded === null
+            ? 'BarcodeDetector unavailable in this browser, check skipped'
+            : decoded.join(' | ') || 'not decoded');
+      } else {
+        record('home: the guest Wi-Fi code still scans', false, 'no .tile-media-code .code-card found');
+      }
+
+      // The extra tiles are a 16:9 band, and the drawn code must not stretch
+      // its tile out of shape the way an unsized SVG would.
+      const codeTile = await page.evaluate(() => {
+        const box = document.querySelector('.tile-media-code');
+        if (!box) return null;
+        const rect = box.getBoundingClientRect();
+        return { width: Math.round(rect.width), height: Math.round(rect.height) };
+      });
+      const codeRatio = codeTile ? codeTile.width / codeTile.height : 0;
+      record('home: the Wi-Fi tile keeps the 16:9 shape',
+        codeTile !== null && Math.abs(codeRatio - 16 / 9) < 0.12,
+        codeTile ? `${codeTile.width}x${codeTile.height} ratio ${codeRatio.toFixed(2)}` : 'tile missing');
     }
   }
 

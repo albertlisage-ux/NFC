@@ -30,6 +30,17 @@ $showcaseQr = dat_qr_svg($showcaseUrl, 6, 3);
 $startQr = dat_qr_svg(dat_url('start'), 5, 3);
 $showcaseAsset = dat_public_asset(dat_demo_asset_row($showcase));
 
+/*
+ * The guest Wi-Fi tile shows the real, scannable code, so it is drawn here
+ * rather than being a cropped picture of one.
+ */
+$extrasBoard = dat_demo_entry('menu_board');
+$wifiPayload = dat_wifi_qr_payload(
+    $extrasBoard['metadata']['wifi_network'] ?? '',
+    $extrasBoard['metadata']['wifi_password'] ?? ''
+);
+$wifiQr = $wifiPayload !== null ? dat_qr_svg($wifiPayload, 6, 4) : '';
+
 dat_page_start([
     'title' => t('home.title_suffix', 'NFC tags, QR codes and one permanent link'),
     'description' => t('home.meta', 'Menu boards, posters, wristbands, necklaces, lanyards, keychains and mini tags that open one permanent page, plus digital tags for pets and clothing. Create the tag and write the chip yourself.'),
@@ -234,28 +245,55 @@ dat_json_ld([
             <div class="grid">
                 <div class="grid-item large-span-6 medium-span-6 small-span-12">
                     <div class="tile">
-                        <div class="tile-media" style="aspect-ratio:16/9"><img src="<?= e(dat_preview_image('wifi-code')) ?>" alt="<?= e(t('home.extra_wifi_title', 'Guest Wi-Fi code')) ?>" loading="lazy"></div>
+                        <div class="tile-media tile-media-code" style="aspect-ratio:16/9">
+                            <?php if ($wifiQr !== ''): ?>
+                                <span class="code-card" role="img" aria-label="<?= e(t('home.extra_wifi_alt', 'The guest Wi-Fi code, drawn as a scannable QR code')) ?>"><?= $wifiQr ?></span>
+                            <?php else: ?>
+                                <i class="fa-solid fa-wifi tile-glyph" aria-hidden="true"></i>
+                            <?php endif; ?>
+                        </div>
                         <h5><?= e(t('home.extra_wifi_title', 'Guest Wi-Fi code')) ?></h5>
                         <p class="tile-body"><?= e(t('demo.extra_wifi', 'A guest Wi-Fi code for menu boards and posters, printable next to the menu code. Guests scan it with the camera and the phone joins the network.')) ?></p>
                     </div>
                 </div>
                 <div class="grid-item large-span-6 medium-span-6 small-span-12">
                     <div class="tile">
-                        <div class="tile-media" style="aspect-ratio:16/9"><i class="fa-brands fa-whatsapp tile-glyph" aria-hidden="true"></i></div>
+                        <div class="tile-media" style="aspect-ratio:16/9">
+                            <?php $messagingImage = dat_extra_image('messaging'); ?>
+                            <?php if ($messagingImage !== null): ?>
+                                <img src="<?= e($messagingImage) ?>" alt="<?= e(t('home.extra_whatsapp_alt', 'A phone in someone\'s hand, ready to answer a message')) ?>" loading="lazy" width="1200" height="675">
+                            <?php else: ?>
+                                <i class="fa-brands fa-whatsapp tile-glyph" aria-hidden="true"></i>
+                            <?php endif; ?>
+                        </div>
                         <h5><?= e(t('home.extra_whatsapp_title', 'WhatsApp, if the owner wants it')) ?></h5>
                         <p class="tile-body"><?= e(t('demo.extra_whatsapp', 'An optional WhatsApp button on the tag page, or a chip that opens WhatsApp directly for shops that only want chat.')) ?></p>
                     </div>
                 </div>
                 <div class="grid-item large-span-6 medium-span-6 small-span-12">
                     <div class="tile">
-                        <div class="tile-media" style="aspect-ratio:16/9"><img src="<?= e(dat_preview_image('tags')) ?>" alt="<?= e(t('home.extra_replace_title', 'Replace a tag, keep the link')) ?>" loading="lazy"></div>
+                        <div class="tile-media" style="aspect-ratio:16/9">
+                            <?php $tagsImage = dat_extra_image('tags'); ?>
+                            <?php if ($tagsImage !== null): ?>
+                                <img src="<?= e($tagsImage) ?>" alt="<?= e(t('home.extra_replace_alt', 'An RFID tag of the kind a damaged chip is swapped for')) ?>" loading="lazy" width="1200" height="675">
+                            <?php else: ?>
+                                <i class="fa-solid fa-arrows-rotate tile-glyph" aria-hidden="true"></i>
+                            <?php endif; ?>
+                        </div>
                         <h5><?= e(t('home.extra_replace_title', 'Replace a tag, keep the link')) ?></h5>
                         <p class="tile-body"><?= e(t('home.extra_replace_body', 'A damaged chip is swapped in the dashboard. The public address never changes, so everything already printed keeps working.')) ?></p>
                     </div>
                 </div>
                 <div class="grid-item large-span-6 medium-span-6 small-span-12">
                     <div class="tile">
-                        <div class="tile-media" style="aspect-ratio:16/9"><i class="fa-solid fa-user-shield tile-glyph" aria-hidden="true"></i></div>
+                        <div class="tile-media" style="aspect-ratio:16/9">
+                            <?php $privacyImage = dat_extra_image('privacy'); ?>
+                            <?php if ($privacyImage !== null): ?>
+                                <img src="<?= e($privacyImage) ?>" alt="<?= e(t('home.extra_privacy_alt', 'A padlock on a weathered door')) ?>" loading="lazy" width="1200" height="675">
+                            <?php else: ?>
+                                <i class="fa-solid fa-user-shield tile-glyph" aria-hidden="true"></i>
+                            <?php endif; ?>
+                        </div>
                         <h5><?= e(t('home.privacy_title', 'What a finder sees, and what stays private')) ?></h5>
                         <p class="tile-body"><?= e(t('home.privacy_body', 'The page describes the product, never the owner. Wi-Fi passwords, campaign IDs and production batches are stored in your dashboard and filtered out of every public page.')) ?></p>
                         <div class="tile-links">

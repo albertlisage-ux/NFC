@@ -61,6 +61,23 @@ asks for reduced motion gets the still instead. An animated WebP cannot be
 paused from CSS, so that choice has to be made in markup; `scripts/ui-check.mjs`
 asserts both halves of it.
 
+## Extras
+
+The four tiles on the "Also built in" band (`assets/img/extras/`), 1200 x 675,
+16:9.
+
+| File | Tile | Source | Licence |
+|------|------|--------|---------|
+| `messaging.jpg` | WhatsApp, if the owner wants it | [Rawpixel via Openverse](https://www.rawpixel.com/image/5923126/photo-image-background-phone-public-domain) | CC0 |
+| `tags.jpg` | Replace a tag, keep the link | [Wikimedia Commons](https://commons.wikimedia.org/wiki/File:RFID_and_magneto-acoustic_tags.JPG) | Public domain |
+| `privacy.jpg` | What a finder sees, and what stays private | [WordPress Photo Directory](https://wordpress.org/photos/photo/6726a05b1d/) | CC0 |
+
+The first tile has no photograph: the guest Wi-Fi code is drawn on the page as
+an SVG so it stays square and whole. As a picture of a code in a 16:9 box it
+was being cropped by `object-fit: cover` and had stopped scanning, which is a
+failure that looks like nothing at all in a screenshot. `ui-check.mjs` now
+decodes the rendered tile in a real browser to catch it coming back.
+
 ## Replacing them
 
 These are stand-ins for a shop that has not photographed its own stock yet.

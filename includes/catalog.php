@@ -346,3 +346,22 @@ if (!function_exists('dat_scene_picture')) {
         return $html;
     }
 }
+
+/**
+ * URL of a photograph in assets/img/extras/, or null when it is missing.
+ *
+ * These are the pictures on the "Also built in" band of the home page:
+ * messaging, tags and privacy. Expect 1200 x 675, 16:9.
+ */
+if (!function_exists('dat_extra_image')) {
+    function dat_extra_image($name)
+    {
+        $file = trim((string) $name) . '.jpg';
+        $path = DAT_APP_ROOT . '/assets/img/extras/' . $file;
+        if (!is_file($path) || !function_exists('dat_url')) {
+            return null;
+        }
+
+        return dat_url('assets/img/extras/' . $file) . '?v=' . filemtime($path);
+    }
+}
