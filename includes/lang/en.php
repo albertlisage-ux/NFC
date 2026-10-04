@@ -21,6 +21,7 @@ return [
     'nav.usecases' => 'Products',
     'nav.write' => 'Write a tag',
     'nav.demo' => 'Live demo',
+    'nav.start' => 'Start',
     'nav.privacy' => 'Privacy',
     'nav.login' => 'Log in',
     'nav.logout' => 'Log out',
@@ -81,6 +82,10 @@ return [
     'home.try_title' => 'See it on a phone',
     'home.try_body' => 'This is the page behind the keychain above, exactly as it opens on a phone: no app, no account, one anonymous message.',
     'home.try_demo' => 'Open the live demo',
+    'home.owner_view_title' => 'The owner dashboard',
+    'home.owner_view_body' => 'Every asset, its status and the messages that arrived. Replies stay inside the portal, so neither side has to share a phone number.',
+    'home.demo_body' => 'Five steps on one page: the tag, the page it opens, the message a finder sends, the answer, and how to start your own.',
+    'home.demo_open' => 'Run through it',
 
     // Start with one tag
     'start.title' => 'Start with one tag',

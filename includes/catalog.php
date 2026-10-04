@@ -247,3 +247,33 @@ if (!function_exists('dat_product_image_url')) {
         return dat_url('assets/img/products/' . $file) . '?v=' . filemtime($path);
     }
 }
+
+/**
+ * URL of a generated page preview, or null when it has not been rendered yet.
+ *
+ * These are screenshots of this application's own pages, produced by
+ * scripts/make-previews.mjs, which is what the tiles on the home page show.
+ */
+if (!function_exists('dat_preview_image')) {
+    function dat_preview_image($name)
+    {
+        foreach (['jpg', 'png'] as $extension) {
+            $file = trim((string) $name) . '.' . $extension;
+            $path = DAT_APP_ROOT . '/assets/img/previews/' . $file;
+            if (is_file($path) && function_exists('dat_url')) {
+                return dat_url('assets/img/previews/' . $file) . '?v=' . filemtime($path);
+            }
+        }
+
+        return null;
+    }
+}
+
+/** The image a product tile should show: real photo, then page preview. */
+if (!function_exists('dat_entry_image')) {
+    function dat_entry_image(array $entry)
+    {
+        $photo = dat_product_image_url($entry['image'] ?? null);
+        return $photo !== null ? $photo : dat_preview_image($entry['key']);
+    }
+}

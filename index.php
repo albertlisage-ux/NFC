@@ -123,13 +123,13 @@ dat_json_ld([
                         if ($type === null || $entry === null) {
                             continue;
                         }
-                        $image = dat_product_image_url($entry['image']);
+                        $image = dat_entry_image($entry);
                         ?>
                         <div class="grid-item large-span-4 medium-span-6 small-span-12">
                             <div class="tile">
-                                <div class="tile-media">
+                                <div class="tile-media tile-media-tall">
                                     <?php if ($image !== null): ?>
-                                        <img src="<?= e($image) ?>" alt="<?= e($entry['name']) ?>" loading="lazy">
+                                        <img src="<?= e($image) ?>" alt="<?= e($entry['name']) ?>" loading="lazy" width="430" height="880">
                                     <?php else: ?>
                                         <i class="<?= e($type['icon']) ?> tile-glyph" aria-hidden="true"></i>
                                     <?php endif; ?>
@@ -204,7 +204,7 @@ dat_json_ld([
             <div class="grid">
                 <div class="grid-item large-span-6 medium-span-6 small-span-12">
                     <div class="tile">
-                        <div class="tile-media" style="aspect-ratio:16/9"><i class="fa-solid fa-wifi tile-glyph" aria-hidden="true"></i></div>
+                        <div class="tile-media" style="aspect-ratio:16/9"><img src="<?= e(dat_preview_image('wifi-code')) ?>" alt="<?= e(t('home.extra_wifi_title', 'Guest Wi-Fi code')) ?>" loading="lazy"></div>
                         <h5><?= e(t('home.extra_wifi_title', 'Guest Wi-Fi code')) ?></h5>
                         <p class="tile-body"><?= e(t('demo.extra_wifi', 'A guest Wi-Fi code for menu boards and posters, printable next to the menu code. Guests scan it with the camera and the phone joins the network.')) ?></p>
                     </div>
@@ -218,7 +218,7 @@ dat_json_ld([
                 </div>
                 <div class="grid-item large-span-6 medium-span-6 small-span-12">
                     <div class="tile">
-                        <div class="tile-media" style="aspect-ratio:16/9"><i class="fa-solid fa-arrows-rotate tile-glyph" aria-hidden="true"></i></div>
+                        <div class="tile-media" style="aspect-ratio:16/9"><img src="<?= e(dat_preview_image('tags')) ?>" alt="<?= e(t('home.extra_replace_title', 'Replace a tag, keep the link')) ?>" loading="lazy"></div>
                         <h5><?= e(t('home.extra_replace_title', 'Replace a tag, keep the link')) ?></h5>
                         <p class="tile-body"><?= e(t('home.extra_replace_body', 'A damaged chip is swapped in the dashboard. The public address never changes, so everything already printed keeps working.')) ?></p>
                     </div>
@@ -258,6 +258,33 @@ dat_json_ld([
                 </div>
                 <div class="grid-item large-span-6 medium-span-6 small-span-12">
                     <?php dat_tag_card($showcaseAsset, [], ['heading_level' => 2]); ?>
+                </div>
+            </div>
+
+            <div class="grid" style="margin-top:44px">
+                <div class="grid-item large-span-6 medium-span-6 small-span-12">
+                    <div class="tile">
+                        <div class="tile-media" style="aspect-ratio:16/10"><img src="<?= e(dat_preview_image('dashboard')) ?>" alt="<?= e(t('home.owner_view_title', 'The owner dashboard')) ?>" loading="lazy"></div>
+                        <h5><?= e(t('home.owner_view_title', 'The owner dashboard')) ?></h5>
+                        <p class="tile-body"><?= e(t('home.owner_view_body', 'Every asset, its status and the messages that arrived. Replies stay inside the portal, so neither side has to share a phone number.')) ?></p>
+                        <div class="tile-links">
+                            <a class="text-link" href="<?= e(dat_url('demo')) ?>">
+                                <i class="fa-solid fa-arrow-right" aria-hidden="true"></i><b><?= e(t('home.try_demo', 'Open the live demo')) ?></b>
+                            </a>
+                        </div>
+                    </div>
+                </div>
+                <div class="grid-item large-span-6 medium-span-6 small-span-12">
+                    <div class="tile">
+                        <div class="tile-media" style="aspect-ratio:16/10"><img src="<?= e(dat_preview_image('demo')) ?>" alt="<?= e(t('home.demo_link', 'Live demo of the whole chain')) ?>" loading="lazy"></div>
+                        <h5><?= e(t('home.demo_link', 'Live demo of the whole chain')) ?></h5>
+                        <p class="tile-body"><?= e(t('home.demo_body', 'Five steps on one page: the tag, the page it opens, the message a finder sends, the answer, and how to start your own.')) ?></p>
+                        <div class="tile-links">
+                            <a class="text-link" href="<?= e(dat_url('demo')) ?>">
+                                <i class="fa-solid fa-arrow-right" aria-hidden="true"></i><b><?= e(t('home.demo_open', 'Run through it')) ?></b>
+                            </a>
+                        </div>
+                    </div>
                 </div>
             </div>
         </div>

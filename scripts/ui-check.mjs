@@ -25,6 +25,8 @@ const args = new Map(
 const base = (args.get('base') || 'http://127.0.0.1:8080').replace(/\/$/, '');
 const diagnosePath = args.get('diagnose') || null;
 const probePath = args.get('probe') || null;
+const overlapPath = args.get('overlaps') || null;
+const overflowPath = args.get('overflow') || null;
 
 function resolvePlaywright() {
   const candidates = [process.env.PLAYWRIGHT_MODULE];
@@ -56,6 +58,116 @@ const record = (label, ok, detail = '') => {
 };
 
 const browser = await chromium.launch({ channel: 'chrome' });
+
+if (overlapPath) {
+  const context = await browser.newContext({
+    viewport: { width: Number(args.get('width') || 1440), height: 1000 },
+    colorScheme: args.get('dark') === 'true' ? 'dark' : 'light',
+  });
+  const page = await context.newPage();
+  await page.goto(base + overlapPath, { waitUntil: 'domcontentloaded' });
+  await page.waitForTimeout(250);
+
+  const found = await page.evaluate(() => {
+    const textTags = ['H1', 'H2', 'H3', 'H4', 'H5', 'H6', 'P', 'LI', 'DT', 'DD', 'FIGCAPTION', 'BUTTON', 'TD', 'TH'];
+    const nodes = [...document.querySelectorAll(textTags.join(','))].filter((el) => {
+      const text = (el.textContent || '').trim();
+      if (text.length < 2) return false;
+      const rect = el.getBoundingClientRect();
+      if (rect.width < 8 || rect.height < 8) return false;
+      if (rect.bottom < 0 || rect.top > window.innerHeight * 6) return false;
+      const style = getComputedStyle(el);
+      return style.visibility !== 'hidden' && style.display !== 'none' && parseFloat(style.opacity) > 0.05;
+    });
+
+    const overlaps = [];
+    for (let i = 0; i < nodes.length; i++) {
+      for (let j = i + 1; j < nodes.length; j++) {
+        const a = nodes[i];
+        const b = nodes[j];
+        if (a.contains(b) || b.contains(a)) continue;
+        const ra = a.getBoundingClientRect();
+        const rb = b.getBoundingClientRect();
+        const x = Math.min(ra.right, rb.right) - Math.max(ra.left, rb.left);
+        const y = Math.min(ra.bottom, rb.bottom) - Math.max(ra.top, rb.top);
+        if (x > 6 && y > 6) {
+          overlaps.push({
+            a: a.tagName + '.' + (a.className || '').toString().split(' ').slice(0, 2).join('.'),
+            b: b.tagName + '.' + (b.className || '').toString().split(' ').slice(0, 2).join('.'),
+            overlap: Math.round(x) + 'x' + Math.round(y),
+            aText: (a.textContent || '').trim().slice(0, 40),
+            bText: (b.textContent || '').trim().slice(0, 40),
+          });
+        }
+      }
+    }
+    return overlaps.slice(0, 20);
+  });
+
+  console.log(`${found.length} overlapping text element(s) on ${overlapPath}:`);
+  for (const item of found) {
+    console.log(`  ${item.overlap}  ${item.a} "${item.aText}"  ><  ${item.b} "${item.bText}"`);
+  }
+  await context.close();
+  await browser.close();
+  process.exit(0);
+}
+
+if (overflowPath) {
+  const context = await browser.newContext({
+    viewport: { width: Number(args.get('width') || 1440), height: 1000 },
+    colorScheme: args.get('dark') === 'true' ? 'dark' : 'light',
+  });
+  const page = await context.newPage();
+  await page.goto(base + overflowPath, { waitUntil: 'domcontentloaded' });
+  await page.waitForTimeout(250);
+
+  const found = await page.evaluate(() => {
+    const out = [];
+    document.querySelectorAll('body *').forEach((el) => {
+      const parent = el.parentElement;
+      if (!parent || parent === document.body) return;
+      const style = getComputedStyle(el);
+      if (style.display === 'none' || style.visibility === 'hidden') return;
+      // Content of a closed <details> is not rendered: not a layout bug.
+      const closed = el.closest('details:not([open])');
+      if (closed && !el.closest('summary')) return;
+      const parentStyle = getComputedStyle(parent);
+      if (['hidden', 'auto', 'scroll'].includes(parentStyle.overflow)
+        || ['hidden', 'auto', 'scroll'].includes(parentStyle.overflowX)
+        || ['hidden', 'auto', 'scroll'].includes(parentStyle.overflowY)) {
+        return;
+      }
+      const r = el.getBoundingClientRect();
+      const p = parent.getBoundingClientRect();
+      if (r.width < 4 || r.height < 4 || p.width < 4) return;
+      const over = {
+        right: Math.round(r.right - p.right),
+        bottom: Math.round(r.bottom - p.bottom),
+        left: Math.round(p.left - r.left),
+      };
+      const worst = Math.max(over.right, over.bottom, over.left);
+      if (worst > 4) {
+        out.push({
+          el: el.tagName + '.' + (el.className || '').toString().split(' ').slice(0, 2).join('.'),
+          parent: parent.tagName + '.' + (parent.className || '').toString().split(' ').slice(0, 2).join('.'),
+          over,
+          size: Math.round(r.width) + 'x' + Math.round(r.height),
+          parentSize: Math.round(p.width) + 'x' + Math.round(p.height),
+        });
+      }
+    });
+    return out.slice(0, 20);
+  });
+
+  console.log(`${found.length} element(s) overflow their parent on ${overflowPath}:`);
+  for (const item of found) {
+    console.log(`  ${item.el} (${item.size}) in ${item.parent} (${item.parentSize}): right+${item.over.right} bottom+${item.over.bottom} left+${item.over.left}`);
+  }
+  await context.close();
+  await browser.close();
+  process.exit(0);
+}
 
 if (probePath) {
   const context = await browser.newContext({ viewport: { width: Number(args.get('width') || 390), height: 844 } });
@@ -241,6 +353,32 @@ for (const viewport of viewports) {
       const navToggle = document.querySelector('.nav-toggle');
       const bodyText = document.body.innerText;
 
+      // Text or boxes that stick out of their container read as "overlapping"
+      // to a visitor, so every page is checked for it.
+      const overflowing = [];
+      document.querySelectorAll('body *').forEach((el) => {
+        const parent = el.parentElement;
+        if (!parent || parent === document.body) return;
+        const style = getComputedStyle(el);
+        if (style.display === 'none' || style.visibility === 'hidden') return;
+        if (el.closest('details:not([open])') && !el.closest('summary')) return;
+        const parentStyle = getComputedStyle(parent);
+        if (['hidden', 'auto', 'scroll'].includes(parentStyle.overflow)
+          || ['hidden', 'auto', 'scroll'].includes(parentStyle.overflowX)
+          || ['hidden', 'auto', 'scroll'].includes(parentStyle.overflowY)) return;
+        const r = el.getBoundingClientRect();
+        const p = parent.getBoundingClientRect();
+        if (r.width < 4 || r.height < 4 || p.width < 4) return;
+        const worst = Math.max(r.right - p.right, r.bottom - p.bottom, p.left - r.left);
+        if (worst > 4) {
+          overflowing.push(
+            el.tagName.toLowerCase() + '.' + (el.className || '').toString().split(' ')[0]
+            + ' in ' + parent.tagName.toLowerCase() + '.' + (parent.className || '').toString().split(' ')[0]
+            + ' by ' + Math.round(worst) + 'px'
+          );
+        }
+      });
+
       return {
         scrollWidth: doc.scrollWidth,
         clientWidth: doc.clientWidth,
@@ -262,6 +400,7 @@ for (const viewport of viewports) {
         lang: document.documentElement.lang,
         title: document.title,
         skipLink: Boolean(document.querySelector('.skip-link')),
+        overflowing: overflowing.slice(0, 3),
       };
     });
 
@@ -271,6 +410,8 @@ for (const viewport of viewports) {
     record(`${target.name}: no em dash in visible copy`, !report.hasEmDash);
     record(`${target.name}: documents a language`, /^[a-z]{2}$/.test(report.lang), report.lang);
     record(`${target.name}: has a skip link`, report.skipLink);
+    record(`${target.name}: nothing overflows its container`, report.overflowing.length === 0,
+      report.overflowing.join('; '));
     const hasCta = report.ctaHeight > 0;
     record(`${target.name}: CTA label fits on one line`, !hasCta || report.ctaWidthFits, hasCta ? '' : 'no primary button on this page');
     record(`${target.name}: CTA height is single-line`, !hasCta || report.ctaHeight <= 60, `${report.ctaHeight}px`);

@@ -343,7 +343,7 @@ if (!function_exists('dat_page_start')) {
                     </form>
                 <?php else: ?>
                     <a class="btn btn-ghost" href="<?= e(dat_url('account/login.php')) ?>"><?= e(t('nav.login', 'Log in')) ?></a>
-                    <a class="btn btn-primary" href="<?= e(dat_url('start')) ?>"><?= e(t('start.title', 'Start with one tag')) ?></a>
+                    <a class="btn btn-primary" href="<?= e(dat_url('start')) ?>"><?= e(t('nav.start', 'Start')) ?></a>
                 <?php endif; ?>
             </div>
 
