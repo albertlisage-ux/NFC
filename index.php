@@ -77,16 +77,25 @@ dat_json_ld([
                 </div>
 
                 <div class="grid-item large-span-6 medium-span-12 small-span-12">
-                    <div class="grid" style="gap:20px">
-                        <div class="grid-item large-span-6 medium-span-6 small-span-6">
-                            <div class="tile-media" style="aspect-ratio:1;padding:14px"><?= $showcaseQr ?></div>
-                            <h5><?= e(t('home.qr_title', 'The tag page')) ?></h5>
-                            <p class="tile-body"><?= e($showcaseUrl) ?></p>
+                    <?php /*
+                     * Two compact code rows instead of two half-width tiles: a
+                     * full tag URL needs the width, and in a 6-column tile it
+                     * used to spill over the neighbouring one.
+                     */ ?>
+                    <div class="qr-rows">
+                        <div class="qr-row">
+                            <div class="qr-row-code"><?= $showcaseQr ?></div>
+                            <div class="qr-row-text">
+                                <h5><?= e(t('home.qr_title', 'The tag page')) ?></h5>
+                                <p class="tile-body"><?= e($showcaseUrl) ?></p>
+                            </div>
                         </div>
-                        <div class="grid-item large-span-6 medium-span-6 small-span-6">
-                            <div class="tile-media" style="aspect-ratio:1;padding:14px"><?= $startQr ?></div>
-                            <h5><?= e(t('home.qr_start_title', 'Your own tag')) ?></h5>
-                            <p class="tile-body"><?= e(t('demo.step5_qr_note', 'Scan to create your own tag')) ?></p>
+                        <div class="qr-row">
+                            <div class="qr-row-code"><?= $startQr ?></div>
+                            <div class="qr-row-text">
+                                <h5><?= e(t('home.qr_start_title', 'Your own tag')) ?></h5>
+                                <p class="tile-body"><?= e(t('demo.step5_qr_note', 'Scan to create your own tag')) ?></p>
+                            </div>
                         </div>
                     </div>
                 </div>

@@ -337,7 +337,7 @@ for (const viewport of viewports) {
       ].find(visible) || null;
       const ctaRect = cta ? cta.getBoundingClientRect() : null;
       const ctaStyle = cta ? getComputedStyle(cta) : null;
-      const qr = document.querySelector('.tile-media svg, .qr-frame svg, .qr-preview svg');
+      const qr = document.querySelector('.qr-row-code svg, .tile-media svg, .qr-frame svg, .qr-preview svg');
       const qrRect = qr ? qr.getBoundingClientRect() : null;
       const hero = document.querySelector('.hero');
       const heroRect = hero ? hero.getBoundingClientRect() : null;
@@ -356,6 +356,7 @@ for (const viewport of viewports) {
       // Text or boxes that stick out of their container read as "overlapping"
       // to a visitor, so every page is checked for it.
       const overflowing = [];
+      const spilling = [];
       document.querySelectorAll('body *').forEach((el) => {
         const parent = el.parentElement;
         if (!parent || parent === document.body) return;
@@ -379,6 +380,25 @@ for (const viewport of viewports) {
         }
       });
 
+      // Text that is wider than its own box runs over whatever sits next to
+      // it, which reads as overlapping text.
+      document.querySelectorAll('p, h1, h2, h3, h4, h5, h6, li, dt, dd, a, span, strong, small, code')
+        .forEach((el) => {
+          if (el.children.length > 0) return;
+          const text = (el.textContent || '').trim();
+          if (text.length < 4) return;
+          const style = getComputedStyle(el);
+          if (style.display === 'none' || style.visibility === 'hidden') return;
+          if (['hidden', 'auto', 'scroll'].includes(style.overflowX)) return;
+          if (el.closest('details:not([open])')) return;
+          if (el.clientWidth > 0 && el.scrollWidth > el.clientWidth + 2) {
+            spilling.push(
+              el.tagName.toLowerCase() + '.' + (el.className || '').toString().split(' ')[0]
+              + ' spills ' + (el.scrollWidth - el.clientWidth) + 'px: "' + text.slice(0, 30) + '…"'
+            );
+          }
+        });
+
       return {
         scrollWidth: doc.scrollWidth,
         clientWidth: doc.clientWidth,
@@ -401,6 +421,7 @@ for (const viewport of viewports) {
         title: document.title,
         skipLink: Boolean(document.querySelector('.skip-link')),
         overflowing: overflowing.slice(0, 3),
+        spilling: spilling.slice(0, 3),
       };
     });
 
@@ -412,6 +433,8 @@ for (const viewport of viewports) {
     record(`${target.name}: has a skip link`, report.skipLink);
     record(`${target.name}: nothing overflows its container`, report.overflowing.length === 0,
       report.overflowing.join('; '));
+    record(`${target.name}: no text spills out of its box`, report.spilling.length === 0,
+      report.spilling.join('; '));
     const hasCta = report.ctaHeight > 0;
     record(`${target.name}: CTA label fits on one line`, !hasCta || report.ctaWidthFits, hasCta ? '' : 'no primary button on this page');
     record(`${target.name}: CTA height is single-line`, !hasCta || report.ctaHeight <= 60, `${report.ctaHeight}px`);

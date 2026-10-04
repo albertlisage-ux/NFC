@@ -1065,8 +1065,22 @@ textarea { min-height: 130px; resize: vertical; }
 .tile-glyph { font-size: 34px; color: var(--accent); }
 .tile h3 { font-size: 24px; margin-bottom: 4px; }
 .tile h5 { margin-bottom: 4px; }
-.tile-body { color: var(--muted); font-size: 14px; line-height: 1.45; margin: 0 0 12px; }
+/* URLs and long tokens must wrap instead of spilling into the next tile. */
+.tile-body { color: var(--muted); font-size: 14px; line-height: 1.45; margin: 0 0 12px; overflow-wrap: anywhere; }
 .tile-links { margin-top: auto; display: grid; gap: 7px; }
+
+/* Compact code rows: a small QR beside its title and address. */
+.qr-rows { display: grid; gap: 16px; }
+.qr-row {
+  display: grid; grid-template-columns: 128px minmax(0, 1fr); gap: 18px; align-items: center;
+  background: var(--surface-alt); border: 1px solid var(--line-soft);
+  border-radius: var(--r-card); padding: 16px;
+}
+.qr-row-code { background: #fff; border: 1px solid var(--line); border-radius: 10px; padding: 8px; }
+.qr-row-code svg { display: block; width: 100%; height: auto; }
+.qr-row-text { min-width: 0; }
+.qr-row-text h5 { margin-bottom: 2px; }
+.qr-row-text .tile-body { margin: 0; }
 
 /* Apple's link rows: a small blue glyph, then a semibold label. */
 .text-link {
