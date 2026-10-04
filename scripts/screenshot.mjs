@@ -27,6 +27,7 @@ const outDir = args.get('out') || '/tmp/nfc-shots';
 const extraPaths = (args.get('paths') || '').split(',').map((value) => value.trim()).filter(Boolean);
 const loginEmail = args.get('email') || null;
 const loginPassword = args.get('password') || null;
+const darkMode = args.get('dark') === 'true';
 
 function resolvePlaywright() {
   const candidates = [process.env.PLAYWRIGHT_MODULE];
@@ -87,6 +88,7 @@ for (const viewport of viewports) {
   const context = await browser.newContext({
     viewport: { width: viewport.width, height: viewport.height },
     deviceScaleFactor: 1,
+    colorScheme: darkMode ? 'dark' : 'light',
   });
   const page = await context.newPage();
 

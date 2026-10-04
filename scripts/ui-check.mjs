@@ -225,7 +225,7 @@ for (const viewport of viewports) {
       ].find(visible) || null;
       const ctaRect = cta ? cta.getBoundingClientRect() : null;
       const ctaStyle = cta ? getComputedStyle(cta) : null;
-      const qr = document.querySelector('.qr-frame svg, .qr-preview svg');
+      const qr = document.querySelector('.tile-media svg, .qr-frame svg, .qr-preview svg');
       const qrRect = qr ? qr.getBoundingClientRect() : null;
       const hero = document.querySelector('.hero');
       const heroRect = hero ? hero.getBoundingClientRect() : null;
@@ -289,6 +289,84 @@ for (const viewport of viewports) {
       record('home: hero follows the header directly', report.heroOffset >= 0 && report.heroOffset < 90,
         `${report.heroOffset}px (${report.heroGeometry})`);
     }
+  }
+
+  await context.close();
+}
+
+/* ------------------------------------------------------- contrast/mode -- */
+
+{
+  console.log('\ndark appearance');
+  const context = await browser.newContext({
+    viewport: { width: 1440, height: 1000 },
+    colorScheme: 'dark',
+  });
+  const page = await context.newPage();
+  const darkPages = ['/', '/use-cases', '/demo', '/privacy', '/start'];
+
+  for (const path of darkPages) {
+    await page.goto(base + path, { waitUntil: 'domcontentloaded' });
+    await page.waitForTimeout(150);
+
+    const report = await page.evaluate(() => {
+      const toRgb = (value) => {
+        const match = value.match(/rgba?\(([^)]+)\)/);
+        if (!match) return null;
+        const parts = match[1].split(',').map((part) => parseFloat(part.trim()));
+        return { r: parts[0], g: parts[1], b: parts[2], a: parts.length > 3 ? parts[3] : 1 };
+      };
+      const luminance = ({ r, g, b }) => {
+        const channel = (value) => {
+          const v = value / 255;
+          return v <= 0.03928 ? v / 12.92 : Math.pow((v + 0.055) / 1.055, 2.4);
+        };
+        return 0.2126 * channel(r) + 0.7152 * channel(g) + 0.0722 * channel(b);
+      };
+      const effectiveBackground = (element) => {
+        let node = element;
+        while (node && node !== document.documentElement) {
+          const colour = toRgb(getComputedStyle(node).backgroundColor);
+          if (colour && colour.a > 0.5) return colour;
+          node = node.parentElement;
+        }
+        return { r: 0, g: 0, b: 0, a: 1 };
+      };
+      const contrast = (element) => {
+        if (!element) return null;
+        const colour = toRgb(getComputedStyle(element).color);
+        if (!colour) return null;
+        const background = effectiveBackground(element);
+        const l1 = luminance(colour);
+        const l2 = luminance(background);
+        return Number(((Math.max(l1, l2) + 0.05) / (Math.min(l1, l2) + 0.05)).toFixed(2));
+      };
+
+      const visible = (element) => Boolean(element) && element.getBoundingClientRect().height > 0;
+      const cta = [
+        document.querySelector('.hero-actions .btn-primary'),
+        ...document.querySelectorAll('.btn-primary'),
+      ].find(visible) || null;
+      const body = document.querySelector('main p') || null;
+      const pageBackground = toRgb(getComputedStyle(document.body).backgroundColor);
+
+      return {
+        scrollWidth: document.documentElement.scrollWidth,
+        clientWidth: document.documentElement.clientWidth,
+        backgroundLuminance: pageBackground ? Number(luminance(pageBackground).toFixed(3)) : null,
+        ctaContrast: contrast(cta),
+        bodyContrast: contrast(body),
+      };
+    });
+
+    record(`${path}: dark appearance is applied`, report.backgroundLuminance !== null && report.backgroundLuminance < 0.1,
+      `background luminance ${report.backgroundLuminance}`);
+    record(`${path}: no horizontal overflow in dark mode`, report.scrollWidth <= report.clientWidth + 1,
+      `${report.scrollWidth} > ${report.clientWidth}`);
+    record(`${path}: CTA contrast in dark mode >= 4.5`, report.ctaContrast === null || report.ctaContrast >= 4.5,
+      String(report.ctaContrast));
+    record(`${path}: body contrast in dark mode >= 4.5`, report.bodyContrast === null || report.bodyContrast >= 4.5,
+      String(report.bodyContrast));
   }
 
   await context.close();
