@@ -6,8 +6,12 @@
  * running portal always show the same data.
  *
  *   php scripts/seed-demo.php
+ *   php scripts/seed-demo.php --email=you@example.com --move
  *
- * Safe to run repeatedly: existing rows are reused.
+ * Safe to run repeatedly: existing rows are reused. `--email` seeds into an
+ * account that already exists instead of the demo one, and `--move` hands the
+ * existing examples over to it, which is how the catalogue examples end up in
+ * the dashboard of the account that actually runs the shop.
  */
 
 if (!defined('LINKTEC_SECURE')) {
@@ -28,12 +32,28 @@ if (PHP_SAPI !== 'cli') {
 const DEMO_EMAIL = 'demo@example.com';
 const DEMO_PASSWORD = 'DemoTag2026!';
 
+$options = [];
+foreach (array_slice($argv ?? [], 1) as $argument) {
+    if (strpos($argument, '--') === 0) {
+        $parts = explode('=', substr($argument, 2), 2);
+        $options[$parts[0]] = $parts[1] ?? true;
+    }
+}
+
 if (dat_db() === null) {
     fwrite(STDERR, 'Cannot connect to ' . DB_NAME . ' at ' . DB_HOST . PHP_EOL);
     exit(1);
 }
 
-$user = dat_one('SELECT * FROM ' . dat_table('users') . ' WHERE email = ? LIMIT 1', [DEMO_EMAIL]);
+$targetEmail = trim((string) ($options['email'] ?? DEMO_EMAIL));
+$move = isset($options['move']);
+$user = dat_one('SELECT * FROM ' . dat_table('users') . ' WHERE email = ? LIMIT 1', [$targetEmail]);
+
+if ($user === null && $targetEmail !== DEMO_EMAIL) {
+    fwrite(STDERR, 'No account with the email ' . $targetEmail . '. Create it first.' . PHP_EOL);
+    exit(1);
+}
+
 if ($user === null) {
     $userId = dat_uuid();
     dat_exec(
@@ -48,6 +68,32 @@ if ($user === null) {
 
 $created = 0;
 $reused = 0;
+$moved = 0;
+
+/*
+ * --move hands the existing examples to the chosen account. The tag pages,
+ * the QR codes and the public demo all read an asset by its public ID, so
+ * moving one changes who manages it and nothing else.
+ */
+if ($move) {
+    foreach (array_column(dat_demo_catalog(), 'public_id') as $publicId) {
+        $row = dat_one(
+            'SELECT id, owner_id FROM ' . dat_table('assets') . ' WHERE public_id = ? LIMIT 1',
+            [$publicId]
+        );
+        if ($row === null || $row['owner_id'] === $user['id']) {
+            continue;
+        }
+        dat_exec(
+            'UPDATE ' . dat_table('assets') . ' SET owner_id = ?, updated_at = ? WHERE id = ?',
+            [$user['id'], dat_now(), $row['id']]
+        );
+        $moved++;
+    }
+    if ($moved > 0) {
+        echo 'Moved ' . $moved . ' example(s) to ' . $targetEmail . PHP_EOL;
+    }
+}
 
 // Drop demo assets whose catalogue entry no longer exists (for example the
 // retired bicycle, vehicle, item and industrial entries), so the demo account
