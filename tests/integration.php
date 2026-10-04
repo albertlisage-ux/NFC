@@ -67,6 +67,7 @@ function integration_schema(): array
             display_name TEXT,
             password_hash TEXT NOT NULL,
             status INTEGER NOT NULL DEFAULT 1,
+            role TEXT NOT NULL DEFAULT \'user\',
             created_at TEXT NOT NULL,
             updated_at TEXT NOT NULL,
             last_login_at TEXT

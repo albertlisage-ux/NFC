@@ -17,6 +17,11 @@ require_once __DIR__ . '/../config/db.php';
 const DAT_USER_STATUS_ACTIVE   = 1;
 const DAT_USER_STATUS_DISABLED = 2;
 
+// A role, not a flag: the administrator area reads every table, and this is
+// the one place that decides who may open it.
+const DAT_USER_ROLE_USER  = 'user';
+const DAT_USER_ROLE_ADMIN = 'admin';
+
 const DAT_MESSAGE_DIRECTION_FINDER = 1;
 const DAT_MESSAGE_DIRECTION_OWNER  = 2;
 
@@ -297,6 +302,56 @@ if (!function_exists('dat_require_login')) {
 
         $target = $returnTo ?? ($_SERVER['REQUEST_URI'] ?? '/dashboard/');
         header('Location: ' . dat_url('account/login.php') . '?next=' . rawurlencode($target));
+        exit;
+    }
+}
+
+/** Whether an account carries the administrator role. */
+if (!function_exists('dat_user_is_admin')) {
+    function dat_user_is_admin($user)
+    {
+        if (!is_array($user)) {
+            return false;
+        }
+
+        return (string) ($user['role'] ?? DAT_USER_ROLE_USER) === DAT_USER_ROLE_ADMIN;
+    }
+}
+
+/**
+ * Gate for the administrator area.
+ *
+ * A visitor who is not signed in is sent to the login form and comes back.
+ * A signed-in visitor without the role gets a plain 404, because answering
+ * "you are not allowed" would confirm that the area exists.
+ */
+if (!function_exists('dat_require_admin')) {
+    function dat_require_admin()
+    {
+        $user = dat_require_login();
+        if (dat_user_is_admin($user)) {
+            return $user;
+        }
+
+        http_response_code(404);
+        dat_page_start([
+            'title' => t('tag.not_found_title', 'Tag not found') . ' | ' . PORTAL_NAME,
+            'robots' => 'noindex, nofollow',
+            'unread' => 0,
+        ]);
+        ?>
+        <main id="main" class="shell">
+            <section class="tag-page">
+                <div class="empty-state">
+                    <i class="fa-solid fa-circle-question" aria-hidden="true"></i>
+                    <h1><?= e(t('tag.not_found_title', 'Tag not found')) ?></h1>
+                    <p><?= e(t('tag.not_found_body', 'This link does not match any registered asset. Check the address, or scan the tag again.')) ?></p>
+                    <p><a class="btn btn-ghost" href="<?= e(dat_url('dashboard/index.php')) ?>"><?= e(t('nav.dashboard', 'Overview')) ?></a></p>
+                </div>
+            </section>
+        </main>
+        <?php
+        dat_page_end();
         exit;
     }
 }

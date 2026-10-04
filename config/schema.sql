@@ -18,6 +18,10 @@ CREATE TABLE IF NOT EXISTS dat_users (
   display_name  VARCHAR(80)      NULL,
   password_hash VARCHAR(255) NOT NULL,
   status        TINYINT      NOT NULL DEFAULT 1,
+  -- 'user' or 'admin'. The administrator area reads every table, so it is
+  -- gated on a role stored on the account rather than on a hidden URL.
+  -- scripts/create-admin.php promotes an account.
+  role          VARCHAR(16)  NOT NULL DEFAULT 'user',
   created_at    DATETIME     NOT NULL,
   updated_at    DATETIME     NOT NULL,
   last_login_at DATETIME         NULL,

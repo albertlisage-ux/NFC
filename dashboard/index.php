@@ -34,6 +34,12 @@ dat_page_start([
                 <?= e(t('nav.messages', 'Messages')) ?>
                 <?php if ($unread > 0): ?><span class="nav-badge"><?= (int) $unread ?></span><?php endif; ?>
             </a>
+            <?php if (dat_user_is_admin($user)): ?>
+                <a class="btn btn-ghost" href="<?= e(dat_url('admin/index.php')) ?>">
+                    <i class="fa-solid fa-database" aria-hidden="true"></i>
+                    <?= e(t('admin.link', 'Administration')) ?>
+                </a>
+            <?php endif; ?>
             <a class="btn btn-primary" href="<?= e(dat_url('dashboard/assets-new.php')) ?>">
                 <i class="fa-solid fa-plus" aria-hidden="true"></i>
                 <?= e(t('dashboard.add_asset', 'Add asset')) ?>
