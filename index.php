@@ -182,9 +182,9 @@ dat_json_ld([
                 <div class="grid-item large-span-4 medium-span-4 small-span-12">
                     <div class="tile">
                         <div class="tile-media" style="aspect-ratio:16/10">
-                            <?php $sceneCreate = dat_scene_picture('create', t('home.step1_alt', 'A phone in one hand, setting up a tag')); ?>
-                            <?php if ($sceneCreate !== ''): ?>
-                                <?= $sceneCreate ?>
+                            <?php $stepCreate = dat_step_picture('create', t('home.step1_alt', 'A form on a phone, and the tag it produces')); ?>
+                            <?php if ($stepCreate !== ''): ?>
+                                <?= $stepCreate ?>
                             <?php else: ?>
                                 <i class="fa-solid fa-plus tile-glyph" aria-hidden="true"></i>
                             <?php endif; ?>
@@ -196,9 +196,9 @@ dat_json_ld([
                 <div class="grid-item large-span-4 medium-span-4 small-span-12">
                     <div class="tile">
                         <div class="tile-media" style="aspect-ratio:16/10">
-                            <?php $sceneWrite = dat_scene_picture('write', t('home.step2_alt', 'An NFC chip inside a printed label')); ?>
-                            <?php if ($sceneWrite !== ''): ?>
-                                <?= $sceneWrite ?>
+                            <?php $stepWrite = dat_step_picture('write', t('home.step2_alt', 'A chip in a tag, and the code being written onto it')); ?>
+                            <?php if ($stepWrite !== ''): ?>
+                                <?= $stepWrite ?>
                             <?php else: ?>
                                 <i class="fa-solid fa-wifi tile-glyph" aria-hidden="true"></i>
                             <?php endif; ?>
@@ -210,9 +210,9 @@ dat_json_ld([
                 <div class="grid-item large-span-4 medium-span-4 small-span-12">
                     <div class="tile">
                         <div class="tile-media" style="aspect-ratio:16/10">
-                            <?php $sceneScan = dat_scene_picture('scan', t('home.step3_alt', 'A code being scanned with a phone')); ?>
-                            <?php if ($sceneScan !== ''): ?>
-                                <?= $sceneScan ?>
+                            <?php $stepScan = dat_step_picture('scan', t('home.step3_alt', 'A tag being tapped, and the message that comes back')); ?>
+                            <?php if ($stepScan !== ''): ?>
+                                <?= $stepScan ?>
                             <?php else: ?>
                                 <i class="fa-solid fa-comments tile-glyph" aria-hidden="true"></i>
                             <?php endif; ?>

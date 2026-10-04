@@ -631,8 +631,8 @@ for (const viewport of viewports) {
 
   // An animated WebP cannot be paused from CSS, so the still has to be chosen
   // in markup. This guards that decision.
-  record('home: reduced motion gets the still, not the loop',
-    sources.length === 3 && sources.every((name) => name.endsWith('.jpg')),
+  record('home: reduced motion gets the still frame, not the loop',
+    sources.length === 3 && sources.every((name) => name.endsWith('-still.webp')),
     sources.join(', ') || 'no picture tiles found');
 
   await context.close();

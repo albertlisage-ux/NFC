@@ -279,66 +279,43 @@ if (!function_exists('dat_entry_image')) {
 }
 
 /**
- * URL of a real photograph in assets/img/scenes/, or null when it is missing.
- *
- * These are the pictures next to the three steps on the home page: a phone,
- * a chip in a label and a code being scanned. Expect 1600 x 1000, 16:10.
- * Leaving the file out falls back to the icon, so the layout never breaks.
+ * URL of a drawn step picture in assets/img/steps/, or null when it is
+ * missing. `$suffix` picks the animation itself or its still frame.
+ * Produced by scripts/make-step-illustrations.py.
  */
-if (!function_exists('dat_scene_image')) {
-    function dat_scene_image($name)
+if (!function_exists('dat_step_image')) {
+    function dat_step_image($name, $suffix = '')
     {
-        foreach (['jpg', 'png'] as $extension) {
-            $file = trim((string) $name) . '.' . $extension;
-            $path = DAT_APP_ROOT . '/assets/img/scenes/' . $file;
-            if (is_file($path) && function_exists('dat_url')) {
-                return dat_url('assets/img/scenes/' . $file) . '?v=' . filemtime($path);
-            }
-        }
-
-        return null;
-    }
-}
-
-/**
- * URL of the animation that belongs to a scene photo, or null when it has not
- * been built. Produced by scripts/make-scene-animations.py.
- */
-if (!function_exists('dat_scene_animation')) {
-    function dat_scene_animation($name)
-    {
-        $file = trim((string) $name) . '.webp';
-        $path = DAT_APP_ROOT . '/assets/img/scenes/' . $file;
+        $file = trim((string) $name) . $suffix . '.webp';
+        $path = DAT_APP_ROOT . '/assets/img/steps/' . $file;
         if (!is_file($path) || !function_exists('dat_url')) {
             return null;
         }
 
-        return dat_url('assets/img/scenes/' . $file) . '?v=' . filemtime($path);
+        return dat_url('assets/img/steps/' . $file) . '?v=' . filemtime($path);
     }
 }
 
 /**
- * The whole picture for a scene: the animation when it exists, the still as
- * the fallback, and the still again for anyone who asked for less motion.
+ * The whole picture for a step: the drawing when it loops, its final frame as
+ * the fallback, and that frame again for anyone who asked for less motion.
  * Animated WebP cannot be paused from CSS, so the choice is made in markup.
  *
- * Returns an empty string when there is no still, so the caller can fall back
- * to a plain icon.
+ * Returns an empty string when nothing has been drawn, so the caller can fall
+ * back to a plain icon.
  */
-if (!function_exists('dat_scene_picture')) {
-    function dat_scene_picture($name, $alt, $width = 1600, $height = 1000)
+if (!function_exists('dat_step_picture')) {
+    function dat_step_picture($name, $alt, $width = 640, $height = 400)
     {
-        $still = dat_scene_image($name);
-        if ($still === null) {
+        $animation = dat_step_image($name);
+        if ($animation === null) {
             return '';
         }
 
-        $animation = dat_scene_animation($name);
+        $still = dat_step_image($name, '-still') ?? $animation;
         $html = '<picture>';
-        $html .= '<source srcset="' . e($still) . '" type="image/jpeg" media="(prefers-reduced-motion: reduce)">';
-        if ($animation !== null) {
-            $html .= '<source srcset="' . e($animation) . '" type="image/webp">';
-        }
+        $html .= '<source srcset="' . e($still) . '" type="image/webp" media="(prefers-reduced-motion: reduce)">';
+        $html .= '<source srcset="' . e($animation) . '" type="image/webp">';
         $html .= '<img src="' . e($still) . '" alt="' . e($alt) . '" loading="lazy"'
             . ' width="' . (int) $width . '" height="' . (int) $height . '">';
         $html .= '</picture>';
