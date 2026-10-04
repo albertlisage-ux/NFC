@@ -640,6 +640,67 @@ for (const viewport of viewports) {
 
 /* ------------------------------------------------- tab behaviour check -- */
 
+/* ------------------------------------------------- product code checks -- */
+
+{
+  console.log('\nQR codes on /use-cases');
+  const context = await browser.newContext({ viewport: { width: 1440, height: 1000 } });
+  const page = await context.newPage();
+  await page.goto(base + '/use-cases', { waitUntil: 'domcontentloaded' });
+
+  const panels = await page.evaluate(() => [...document.querySelectorAll('.type-panel')].map((panel) => panel.id));
+  const failures = [];
+  let checked = 0;
+  let supported = true;
+
+  for (const id of panels) {
+    // The panels swap on :target, so the one being checked has to be the
+    // visible one before it can be screenshotted.
+    await page.evaluate((target) => {
+      window.location.hash = '#' + target;
+    }, id);
+    await page.waitForTimeout(120);
+
+    const panel = await page.$('#' + id);
+    const mark = panel ? await panel.$('.example-code-mark') : null;
+    if (mark === null) {
+      failures.push(`${id}: no code shown`);
+      continue;
+    }
+
+    const expected = await panel.$eval('.example-code-body .example-url code', (el) => el.textContent.trim());
+    const shot = await mark.screenshot();
+    const decoded = await page.evaluate(async (base64) => {
+      if (typeof BarcodeDetector === 'undefined') return null;
+      const image = new Image();
+      image.src = 'data:image/png;base64,' + base64;
+      await image.decode();
+      const detector = new BarcodeDetector({ formats: ['qr_code'] });
+      return (await detector.detect(image)).map((code) => code.rawValue);
+    }, shot.toString('base64'));
+
+    if (decoded === null) {
+      supported = false;
+      break;
+    }
+    if (!decoded.includes(expected)) {
+      failures.push(`${id}: ${decoded[0] || 'did not decode'}`);
+      continue;
+    }
+    checked += 1;
+  }
+
+  record('use-cases: every product shows a code that decodes to its own address',
+    !supported || (failures.length === 0 && checked === panels.length),
+    supported
+      ? (failures.join('; ') || `${checked} of ${panels.length} checked`)
+      : 'BarcodeDetector unavailable in this browser, check skipped');
+
+  await context.close();
+}
+
+/* ------------------------------------------------- tab behaviour check -- */
+
 {
   console.log('\ntab switching on /use-cases');
   const context = await browser.newContext({ viewport: { width: 1440, height: 1000 } });

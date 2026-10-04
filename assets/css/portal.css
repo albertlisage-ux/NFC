@@ -670,6 +670,27 @@ code, kbd, samp {
   width: 100%; aspect-ratio: 4 / 3; object-fit: cover;
   border-radius: var(--r-card); border: 1px solid var(--line);
 }
+
+/* The code that goes on the product, in the panel where the product is
+   explained. Stacked rather than set beside its text: the copy column of the
+   example grid is only 256px wide, and a QR beside a paragraph leaves neither
+   enough room. */
+.example-code {
+  display: grid; gap: 14px; margin-top: 22px;
+  background: var(--surface-alt); border: 1px solid var(--line-soft);
+  border-radius: var(--r-card); padding: 18px;
+}
+.example-code-mark {
+  /* The code stays on white: scanners need the contrast, in both themes. */
+  width: 100%; max-width: 220px;
+  background: #fff; border: 1px solid var(--line); border-radius: 12px; padding: 8px;
+}
+.example-code-mark svg { display: block; width: 100%; height: auto; }
+.example-code-body { min-width: 0; }
+.example-code-body h4 { font-size: 1rem; margin-bottom: 10px; }
+.example-code-body .example-url { display: flex; flex-wrap: wrap; gap: 10px; align-items: center; }
+.example-code-body .example-url code { overflow-wrap: anywhere; }
+.example-code-body .btn-group { margin: 12px 0 10px; }
 .product-shot-placeholder {
   display: flex; gap: 12px; align-items: center;
   background: var(--surface-alt); border: 1px dashed var(--line);

@@ -221,7 +221,74 @@ dat_page_start([
                                         <p class="form-hint"><?= e(sprintf(t('cases.payload_hint', '%d bytes, the link is what makes the tag work.'), dat_nfc_payload_bytes($payload))) ?></p>
                                     </details>
 
-                                    <p class="example-url"><code><?= e($tagUrl) ?></code></p>
+                                    <?php
+                                    /*
+                                     * The code itself, every product, on the page
+                                     * where the product is explained. It is the
+                                     * same address the chip carries, drawn by
+                                     * this installation, and the downloads come
+                                     * from the same endpoints the dashboard uses.
+                                     */
+                                    $qrCode = dat_qr($tagUrl);
+                                    $qrSvg = $qrCode !== null ? $qrCode->toSvg(6, 3) : '';
+                                    $payloadBytes = dat_nfc_payload_bytes($payload);
+                                    $chipHint = dat_nfc_capacity_hint($payloadBytes);
+                                    $pngUrl = dat_url('qr/image.php') . '?id=' . rawurlencode($entry['public_id']) . '&format=png&download=1&scale=12';
+                                    $svgUrl = dat_url('qr/image.php') . '?id=' . rawurlencode($entry['public_id']) . '&format=svg&download=1&scale=12';
+                                    $nfcUrl = dat_url('qr/nfc.php') . '?id=' . rawurlencode($entry['public_id']) . '&download=1';
+                                    ?>
+                                    <section class="example-code">
+                                        <?php if ($qrSvg !== ''): ?>
+                                            <div class="example-code-mark" role="img"
+                                                 aria-label="<?= e(sprintf(t('cases.code_alt', 'The QR code that opens the %s tag page'), $entry['name'])) ?>">
+                                                <?= $qrSvg ?>
+                                            </div>
+                                        <?php endif; ?>
+
+                                        <div class="example-code-body">
+                                            <h4>
+                                                <i class="fa-solid fa-qrcode" aria-hidden="true"></i>
+                                                <?= e(t('cases.code_title', 'The code that goes on it')) ?>
+                                            </h4>
+                                            <p class="example-url">
+                                                <code><?= e($tagUrl) ?></code>
+                                                <button type="button" class="btn btn-ghost btn-sm"
+                                                        data-copy="<?= e($tagUrl) ?>"
+                                                        data-copy-label="<?= e(t('tag.copied', 'Copied')) ?>">
+                                                    <i class="fa-solid fa-copy" aria-hidden="true"></i><span><?= e(t('cases.code_copy', 'Copy link')) ?></span>
+                                                </button>
+                                            </p>
+                                            <p class="form-hint">
+                                                <?php if ($qrCode !== null): ?>
+                                                    <?= e(sprintf(
+                                                        t('cases.code_facts', 'Version %1$d code, %2$d modules across, error correction %3$s.'),
+                                                        $qrCode->version(),
+                                                        $qrCode->size(),
+                                                        $qrCode->errorCorrectionLevel()
+                                                    )) ?>
+                                                <?php endif; ?>
+                                                <?= e(sprintf(t('tag.nfc_size', '%d bytes written.'), $payloadBytes)) ?>
+                                                <?php if ($chipHint !== null): ?>
+                                                    <?= e(sprintf(t('tag.nfc_fits', 'Fits on %s and larger chips.'), $chipHint)) ?>
+                                                <?php endif; ?>
+                                            </p>
+                                            <div class="btn-group">
+                                                <a class="btn btn-ghost btn-sm" href="<?= e($pngUrl) ?>">
+                                                    <i class="fa-solid fa-download" aria-hidden="true"></i>
+                                                    <?= e(t('tag.download_png', 'Download PNG')) ?>
+                                                </a>
+                                                <a class="btn btn-ghost btn-sm" href="<?= e($svgUrl) ?>">
+                                                    <i class="fa-solid fa-download" aria-hidden="true"></i>
+                                                    <?= e(t('tag.download_svg', 'Download SVG')) ?>
+                                                </a>
+                                                <a class="btn btn-ghost btn-sm" href="<?= e($nfcUrl) ?>">
+                                                    <i class="fa-solid fa-download" aria-hidden="true"></i>
+                                                    <?= e(t('tag.download_txt', 'Download .txt')) ?>
+                                                </a>
+                                            </div>
+                                            <p class="form-hint"><?= e(t('tag.qr_hint', 'Use the SVG version for printing: it stays sharp at any size. Keep the white border, scanners need it.')) ?></p>
+                                        </div>
+                                    </section>
                                 </div>
 
                                 <div class="example-preview">
