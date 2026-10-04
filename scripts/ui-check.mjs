@@ -292,6 +292,19 @@ for (const viewport of viewports) {
     await page.goto(base + target.path, { waitUntil: 'domcontentloaded', timeout: 30000 });
     await page.waitForTimeout(150);
 
+    // Photographs sit below the fold and are lazy-loaded, so ask for them all
+    // and wait until each one has either arrived or failed.
+    await page.evaluate(() => {
+      document.querySelectorAll('img[loading="lazy"]').forEach((img) => {
+        img.loading = 'eager';
+      });
+    });
+    await page.waitForFunction(
+      () => [...document.images].every((img) => img.complete),
+      null,
+      { timeout: 10000 },
+    ).catch(() => {});
+
     const report = await page.evaluate(() => {
       const toRgb = (value) => {
         const match = value.match(/rgba?\(([^)]+)\)/);
@@ -422,6 +435,14 @@ for (const viewport of viewports) {
         skipLink: Boolean(document.querySelector('.skip-link')),
         overflowing: overflowing.slice(0, 3),
         spilling: spilling.slice(0, 3),
+        brokenImages: [...document.images]
+          .filter((img) => img.complete && img.naturalWidth === 0)
+          .map((img) => img.getAttribute('src') || '(no src)')
+          .slice(0, 4),
+        imagesWithoutAlt: [...document.images]
+          .filter((img) => !img.hasAttribute('alt'))
+          .map((img) => img.getAttribute('src') || '(no src)')
+          .slice(0, 4),
       };
     });
 
@@ -435,6 +456,10 @@ for (const viewport of viewports) {
       report.overflowing.join('; '));
     record(`${target.name}: no text spills out of its box`, report.spilling.length === 0,
       report.spilling.join('; '));
+    record(`${target.name}: every image loads`, report.brokenImages.length === 0,
+      report.brokenImages.join('; '));
+    record(`${target.name}: every image has alt text`, report.imagesWithoutAlt.length === 0,
+      report.imagesWithoutAlt.join('; '));
     const hasCta = report.ctaHeight > 0;
     record(`${target.name}: CTA label fits on one line`, !hasCta || report.ctaWidthFits, hasCta ? '' : 'no primary button on this page');
     record(`${target.name}: CTA height is single-line`, !hasCta || report.ctaHeight <= 60, `${report.ctaHeight}px`);

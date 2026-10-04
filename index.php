@@ -138,7 +138,7 @@ dat_json_ld([
                             <div class="tile">
                                 <div class="tile-media tile-media-tall">
                                     <?php if ($image !== null): ?>
-                                        <img src="<?= e($image) ?>" alt="<?= e($entry['name']) ?>" loading="lazy" width="430" height="880">
+                                        <img src="<?= e($image) ?>" alt="<?= e($entry['name']) ?>" loading="lazy" width="1200" height="900">
                                     <?php else: ?>
                                         <i class="<?= e($type['icon']) ?> tile-glyph" aria-hidden="true"></i>
                                     <?php endif; ?>
@@ -170,21 +170,42 @@ dat_json_ld([
             <div class="grid">
                 <div class="grid-item large-span-4 medium-span-4 small-span-12">
                     <div class="tile">
-                        <div class="tile-media" style="aspect-ratio:16/10"><i class="fa-solid fa-plus tile-glyph" aria-hidden="true"></i></div>
+                        <?php $sceneCreate = dat_scene_image('create'); ?>
+                        <div class="tile-media" style="aspect-ratio:16/10">
+                            <?php if ($sceneCreate !== null): ?>
+                                <img src="<?= e($sceneCreate) ?>" alt="<?= e(t('home.step1_alt', 'A phone in one hand, setting up a tag')) ?>" loading="lazy" width="1600" height="1000">
+                            <?php else: ?>
+                                <i class="fa-solid fa-plus tile-glyph" aria-hidden="true"></i>
+                            <?php endif; ?>
+                        </div>
                         <h5><?= e(t('home.step1_title', 'Create the tag')) ?></h5>
                         <p class="tile-body"><?= e(t('home.step1_body', 'Pick a product, give it a name and add the details a stranger needs. Your account stays minimal: email and password.')) ?></p>
                     </div>
                 </div>
                 <div class="grid-item large-span-4 medium-span-4 small-span-12">
                     <div class="tile">
-                        <div class="tile-media" style="aspect-ratio:16/10"><i class="fa-solid fa-wifi tile-glyph" aria-hidden="true"></i></div>
+                        <?php $sceneWrite = dat_scene_image('write'); ?>
+                        <div class="tile-media" style="aspect-ratio:16/10">
+                            <?php if ($sceneWrite !== null): ?>
+                                <img src="<?= e($sceneWrite) ?>" alt="<?= e(t('home.step2_alt', 'An NFC chip inside a printed label')) ?>" loading="lazy" width="1600" height="1000">
+                            <?php else: ?>
+                                <i class="fa-solid fa-wifi tile-glyph" aria-hidden="true"></i>
+                            <?php endif; ?>
+                        </div>
                         <h5><?= e(t('home.step2_title', 'Write the chip')) ?></h5>
                         <p class="tile-body"><?= e(t('home.step2_body', 'Download the QR code as PNG or SVG, or copy the short NFC text and write it with any NFC app such as NFC Tools.')) ?></p>
                     </div>
                 </div>
                 <div class="grid-item large-span-4 medium-span-4 small-span-12">
                     <div class="tile">
-                        <div class="tile-media" style="aspect-ratio:16/10"><i class="fa-solid fa-comments tile-glyph" aria-hidden="true"></i></div>
+                        <?php $sceneScan = dat_scene_image('scan'); ?>
+                        <div class="tile-media" style="aspect-ratio:16/10">
+                            <?php if ($sceneScan !== null): ?>
+                                <img src="<?= e($sceneScan) ?>" alt="<?= e(t('home.step3_alt', 'A code being scanned with a phone')) ?>" loading="lazy" width="1600" height="1000">
+                            <?php else: ?>
+                                <i class="fa-solid fa-comments tile-glyph" aria-hidden="true"></i>
+                            <?php endif; ?>
+                        </div>
                         <h5><?= e(t('home.step3_title', 'Scan, and get a message')) ?></h5>
                         <p class="tile-body"><?= e(t('home.step3_body', 'Whoever taps the tag opens the same stable link. If they write to you, the message lands in your inbox and they never learn who you are.')) ?></p>
                     </div>

@@ -27,5 +27,10 @@ Recommendations
 - Shoot the real product: for a shop that sells physical tags, real photos sell
   better than any rendering
 
+The photos currently in this folder are CC0 or public domain stand-ins, listed
+with their source in `docs/PHOTOS.md`. Replace them with your own shots when
+you have them: overwrite the file, keep the name, and nothing else changes.
+Strip the location data before publishing (`exiftool -all= photo.jpg`).
+
 To add another product later, add a file here and give it the `image` name in
 `includes/catalog.php`.

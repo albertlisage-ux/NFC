@@ -277,3 +277,25 @@ if (!function_exists('dat_entry_image')) {
         return $photo !== null ? $photo : dat_preview_image($entry['key']);
     }
 }
+
+/**
+ * URL of a real photograph in assets/img/scenes/, or null when it is missing.
+ *
+ * These are the pictures next to the three steps on the home page: a phone,
+ * a chip in a label and a code being scanned. Expect 1600 x 1000, 16:10.
+ * Leaving the file out falls back to the icon, so the layout never breaks.
+ */
+if (!function_exists('dat_scene_image')) {
+    function dat_scene_image($name)
+    {
+        foreach (['jpg', 'png'] as $extension) {
+            $file = trim((string) $name) . '.' . $extension;
+            $path = DAT_APP_ROOT . '/assets/img/scenes/' . $file;
+            if (is_file($path) && function_exists('dat_url')) {
+                return dat_url('assets/img/scenes/' . $file) . '?v=' . filemtime($path);
+            }
+        }
+
+        return null;
+    }
+}
