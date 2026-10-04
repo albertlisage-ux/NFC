@@ -19,7 +19,7 @@ Drop-in files for the products page and the home page tiles. Each one is
 | `lanyard.jpg` | Attendee card and lanyard on a table | [WordPress Photo Directory](https://wordpress.org/photos/photo/1926710db3/) | CC0 |
 | `keychain.jpg` | Keychain with keys on a white table | [WordPress Photo Directory](https://wordpress.org/photos/photo/91565c6210/) | CC0 |
 | `mini-tag.jpg` | RFID chip laminated into a small label | [Wikimedia Commons, by Pedalito](https://commons.wikimedia.org/wiki/File:RFID_tag_in_a_label_1.png) | CC0 |
-| `pet.jpg` | Golden retriever portrait | [WordPress Photo Directory](https://wordpress.org/photos/photo/18068c2884/) | CC0 |
+| `pet.jpg` | The shop's own pet-tag product photo | Supplied by the shop (`~/Desktop/71ZH3YFAWkL._AC_UF894,1000_QL80_.jpg`) | Own work |
 | `clothing.jpg` | Care label sewn into a garment | [Wikimedia Commons, by Elkagye](https://commons.wikimedia.org/wiki/File:Label_with_care_symbols.JPG) | Public domain |
 
 ## Scenes
