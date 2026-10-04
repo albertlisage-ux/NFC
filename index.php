@@ -170,10 +170,10 @@ dat_json_ld([
             <div class="grid">
                 <div class="grid-item large-span-4 medium-span-4 small-span-12">
                     <div class="tile">
-                        <?php $sceneCreate = dat_scene_image('create'); ?>
                         <div class="tile-media" style="aspect-ratio:16/10">
-                            <?php if ($sceneCreate !== null): ?>
-                                <img src="<?= e($sceneCreate) ?>" alt="<?= e(t('home.step1_alt', 'A phone in one hand, setting up a tag')) ?>" loading="lazy" width="1600" height="1000">
+                            <?php $sceneCreate = dat_scene_picture('create', t('home.step1_alt', 'A phone in one hand, setting up a tag')); ?>
+                            <?php if ($sceneCreate !== ''): ?>
+                                <?= $sceneCreate ?>
                             <?php else: ?>
                                 <i class="fa-solid fa-plus tile-glyph" aria-hidden="true"></i>
                             <?php endif; ?>
@@ -184,10 +184,10 @@ dat_json_ld([
                 </div>
                 <div class="grid-item large-span-4 medium-span-4 small-span-12">
                     <div class="tile">
-                        <?php $sceneWrite = dat_scene_image('write'); ?>
                         <div class="tile-media" style="aspect-ratio:16/10">
-                            <?php if ($sceneWrite !== null): ?>
-                                <img src="<?= e($sceneWrite) ?>" alt="<?= e(t('home.step2_alt', 'An NFC chip inside a printed label')) ?>" loading="lazy" width="1600" height="1000">
+                            <?php $sceneWrite = dat_scene_picture('write', t('home.step2_alt', 'An NFC chip inside a printed label')); ?>
+                            <?php if ($sceneWrite !== ''): ?>
+                                <?= $sceneWrite ?>
                             <?php else: ?>
                                 <i class="fa-solid fa-wifi tile-glyph" aria-hidden="true"></i>
                             <?php endif; ?>
@@ -198,10 +198,10 @@ dat_json_ld([
                 </div>
                 <div class="grid-item large-span-4 medium-span-4 small-span-12">
                     <div class="tile">
-                        <?php $sceneScan = dat_scene_image('scan'); ?>
                         <div class="tile-media" style="aspect-ratio:16/10">
-                            <?php if ($sceneScan !== null): ?>
-                                <img src="<?= e($sceneScan) ?>" alt="<?= e(t('home.step3_alt', 'A code being scanned with a phone')) ?>" loading="lazy" width="1600" height="1000">
+                            <?php $sceneScan = dat_scene_picture('scan', t('home.step3_alt', 'A code being scanned with a phone')); ?>
+                            <?php if ($sceneScan !== ''): ?>
+                                <?= $sceneScan ?>
                             <?php else: ?>
                                 <i class="fa-solid fa-comments tile-glyph" aria-hidden="true"></i>
                             <?php endif; ?>

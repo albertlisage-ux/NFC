@@ -443,6 +443,10 @@ for (const viewport of viewports) {
           .filter((img) => !img.hasAttribute('alt'))
           .map((img) => img.getAttribute('src') || '(no src)')
           .slice(0, 4),
+        // The three step tiles are <picture> elements: the animation for most
+        // visitors, the still for anyone who asked for less motion.
+        stepSources: [...document.querySelectorAll('.tile-media picture img')]
+          .map((img) => (img.currentSrc || '').split('?')[0].split('/').pop()),
       };
     });
 
@@ -475,6 +479,9 @@ for (const viewport of viewports) {
 
     if (target.name === 'home') {
       record('home: hero QR code is rendered', report.qrSize >= 90, `${report.qrSize}px`);
+      record('home: the three step tiles serve the animation',
+        report.stepSources.length === 3 && report.stepSources.every((name) => name.endsWith('.webp')),
+        report.stepSources.join(', ') || 'no picture tiles found');
       record('home: hero follows the header directly', report.heroOffset >= 0 && report.heroOffset < 90,
         `${report.heroOffset}px (${report.heroGeometry})`);
     }
@@ -557,6 +564,40 @@ for (const viewport of viewports) {
     record(`${path}: body contrast in dark mode >= 4.5`, report.bodyContrast === null || report.bodyContrast >= 4.5,
       String(report.bodyContrast));
   }
+
+  await context.close();
+}
+
+/* --------------------------------------------- reduced motion fallback -- */
+
+{
+  console.log('\nreduced motion on /');
+  const context = await browser.newContext({
+    viewport: { width: 1440, height: 1000 },
+    reducedMotion: 'reduce',
+  });
+  const page = await context.newPage();
+  await page.goto(base + '/', { waitUntil: 'domcontentloaded' });
+  // Ask for the lazy images so the browser commits to a source.
+  await page.evaluate(() => {
+    document.querySelectorAll('img[loading="lazy"]').forEach((img) => {
+      img.loading = 'eager';
+    });
+  });
+  await page.waitForFunction(
+    () => [...document.images].every((img) => img.complete),
+    null,
+    { timeout: 10000 },
+  ).catch(() => {});
+
+  const sources = await page.evaluate(() => [...document.querySelectorAll('.tile-media picture img')]
+    .map((img) => (img.currentSrc || '').split('?')[0].split('/').pop()));
+
+  // An animated WebP cannot be paused from CSS, so the still has to be chosen
+  // in markup. This guards that decision.
+  record('home: reduced motion gets the still, not the loop',
+    sources.length === 3 && sources.every((name) => name.endsWith('.jpg')),
+    sources.join(', ') || 'no picture tiles found');
 
   await context.close();
 }

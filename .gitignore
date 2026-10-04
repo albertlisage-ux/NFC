@@ -19,6 +19,10 @@ Thumbs.db
 vendor/
 node_modules/
 
+# Python helper scripts (scripts/make-scene-animations.py)
+__pycache__/
+.venv/
+
 # Local databases and backups
 *.sqlite
 *.sql.gz

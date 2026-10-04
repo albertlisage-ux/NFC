@@ -33,6 +33,34 @@ The three pictures beside the steps on the home page (`assets/img/scenes/`),
 | `write.jpg` | Write the chip | [Wikimedia Commons, by Adrian Tync](https://commons.wikimedia.org/wiki/File:RFID_in_book.jpg) | CC0 |
 | `scan.jpg` | Scan and read | [WordPress Photo Directory](https://wordpress.org/photos/photo/339642c1e5/) | CC0 |
 
+### The moving versions
+
+Beside each still sits a looping animation built from it, `create.webp`,
+`write.webp` and `scan.webp`. They are not a separate set of pictures: the
+photograph is pushed in slowly, one soft band of light crosses it, and a
+single accent says what the step does, a ring pulse for setting a tag up, a
+progress bar for writing the chip, a travelling band for reading a code.
+
+- 720 x 450, 32 frames, 150 ms a frame, so one loop is 4.8 seconds
+- roughly 280 to 350 KB each, and around 1 MB for all three
+- seamless: the zoom eases in and back out, and the sweep and accent both
+  start and end invisible
+
+Rebuild them after replacing a still:
+
+```sh
+python3 -m venv .venv
+.venv/bin/pip install pillow
+.venv/bin/python scripts/make-scene-animations.py
+```
+
+`img2webp` from libwebp has to be on PATH (`brew install webp`).
+
+The page offers the animation through `<picture>`, and anyone whose system
+asks for reduced motion gets the still instead. An animated WebP cannot be
+paused from CSS, so that choice has to be made in markup; `scripts/ui-check.mjs`
+asserts both halves of it.
+
 ## Replacing them
 
 These are stand-ins for a shop that has not photographed its own stock yet.

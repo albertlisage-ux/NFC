@@ -299,3 +299,50 @@ if (!function_exists('dat_scene_image')) {
         return null;
     }
 }
+
+/**
+ * URL of the animation that belongs to a scene photo, or null when it has not
+ * been built. Produced by scripts/make-scene-animations.py.
+ */
+if (!function_exists('dat_scene_animation')) {
+    function dat_scene_animation($name)
+    {
+        $file = trim((string) $name) . '.webp';
+        $path = DAT_APP_ROOT . '/assets/img/scenes/' . $file;
+        if (!is_file($path) || !function_exists('dat_url')) {
+            return null;
+        }
+
+        return dat_url('assets/img/scenes/' . $file) . '?v=' . filemtime($path);
+    }
+}
+
+/**
+ * The whole picture for a scene: the animation when it exists, the still as
+ * the fallback, and the still again for anyone who asked for less motion.
+ * Animated WebP cannot be paused from CSS, so the choice is made in markup.
+ *
+ * Returns an empty string when there is no still, so the caller can fall back
+ * to a plain icon.
+ */
+if (!function_exists('dat_scene_picture')) {
+    function dat_scene_picture($name, $alt, $width = 1600, $height = 1000)
+    {
+        $still = dat_scene_image($name);
+        if ($still === null) {
+            return '';
+        }
+
+        $animation = dat_scene_animation($name);
+        $html = '<picture>';
+        $html .= '<source srcset="' . e($still) . '" type="image/jpeg" media="(prefers-reduced-motion: reduce)">';
+        if ($animation !== null) {
+            $html .= '<source srcset="' . e($animation) . '" type="image/webp">';
+        }
+        $html .= '<img src="' . e($still) . '" alt="' . e($alt) . '" loading="lazy"'
+            . ' width="' . (int) $width . '" height="' . (int) $height . '">';
+        $html .= '</picture>';
+
+        return $html;
+    }
+}
