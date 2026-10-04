@@ -330,7 +330,8 @@ if (!function_exists('dat_unread_message_count')) {
 if (!function_exists('dat_purge_expired_messages')) {
     function dat_purge_expired_messages()
     {
-        dat_exec(
+        // Replies point at their finder message, so the cascade removes them too.
+        return dat_exec(
             'DELETE FROM ' . dat_table('messages') . ' WHERE expires_at IS NOT NULL AND expires_at < ?',
             [dat_now()]
         );

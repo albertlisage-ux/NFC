@@ -18,9 +18,13 @@ require_once __DIR__ . '/qrcode.php';
 require_once __DIR__ . '/uploads.php';
 require_once __DIR__ . '/guest.php';
 require_once __DIR__ . '/demo.php';
+require_once __DIR__ . '/maintenance.php';
 require_once __DIR__ . '/view.php';
 
 dat_session_start();
+
+// Retention and pruning, on a small share of requests.
+dat_maintenance_opportunistic();
 
 if (!headers_sent()) {
     header('X-Content-Type-Options: nosniff');

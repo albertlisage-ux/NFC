@@ -70,11 +70,6 @@ if (($_SERVER['REQUEST_METHOD'] ?? '') === 'POST') {
     }
 }
 
-// Opportunistic cleanup of expired guest sessions, an occasional cheap query.
-if (random_int(1, 20) === 1) {
-    dat_purge_guest_sessions();
-}
-
 $guestAssets = $user === null ? dat_guest_assets() : [];
 $guestAsset = $guestAssets[0] ?? null;
 $justCreated = isset($_GET['created']) && $guestAsset !== null;

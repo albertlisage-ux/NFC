@@ -15,6 +15,11 @@
 # The production environment file lives in .deploy/env (also ignored by Git) and
 # is uploaded as .env. Keeping it out of the working tree means a local preview
 # never picks up the production base URL.
+#
+# After the upload the tree is handed to the web user and given explicit modes.
+# Without that step rsync would carry the local numeric user id to the server,
+# and .env (mode 640) would be unreadable by PHP, silently taking the site's
+# database connection with it.
 set -euo pipefail
 
 ROOT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
@@ -57,6 +62,7 @@ host="$(json_value host)" || fail "Missing host in $CONFIG_FILE."
 username="$(json_value username)" || fail "Missing username in $CONFIG_FILE."
 remote_path="$(json_value remotePath)" || fail "Missing remotePath in $CONFIG_FILE."
 port="$(json_value port 2>/dev/null || printf '22')"
+web_user="${SYNC_WEB_USER:-apache}"
 password="${SFTP_PASSWORD:-$(json_value password 2>/dev/null || true)}"
 
 if [ -z "$password" ] && command -v security >/dev/null 2>&1; then
@@ -120,7 +126,8 @@ fi
 ssh -p "$port" -o StrictHostKeyChecking=accept-new -o NumberOfPasswordPrompts=1 \
     "$username@$host" "mkdir -p '$remote_path'"
 
-rsync -az --human-readable --progress \
+# --no-owner/--no-group: the remote fix-up below decides ownership, not the Mac.
+rsync -az --no-owner --no-group --human-readable --progress \
     ${dry_run_args[@]+"${dry_run_args[@]}"} \
     ${delete_args[@]+"${delete_args[@]}"} \
     "${exclude_args[@]}" \
@@ -136,6 +143,16 @@ if [ -f "$ROOT_DIR/.deploy/env" ]; then
 else
     printf 'WARNING: .deploy/env is missing; the server keeps its current .env.\n'
 fi
+
+# Hand the tree to the web user with explicit modes.
+ssh -p "$port" -o StrictHostKeyChecking=accept-new -o NumberOfPasswordPrompts=1 \
+    "$username@$host" "
+        chown -R '$web_user':'$web_user' '$remote_path' &&
+        find '$remote_path' -type d -exec chmod 755 {} \\; &&
+        find '$remote_path' -type f -exec chmod 644 {} \\; &&
+        chmod 640 '$remote_path/.env' &&
+        chmod 775 '$remote_path/logs' '$remote_path/storage' '$remote_path/storage/uploads'
+    " || fail "Upload finished but the ownership fix-up failed; PHP may not be able to read .env."
 
 printf 'Upload complete.\n'
 

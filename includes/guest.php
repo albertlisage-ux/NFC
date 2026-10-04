@@ -213,7 +213,7 @@ if (!function_exists('dat_purge_guest_sessions')) {
     {
         $expired = dat_all(
             'SELECT user_id FROM ' . dat_table('guest_sessions') . '
-              WHERE expires_at < ? AND claimed_at IS NULL',
+              WHERE expires_at < ?',
             [dat_now()]
         );
 

@@ -134,7 +134,6 @@ function integration_schema(): array
             ip_hash TEXT,
             created_at TEXT NOT NULL,
             expires_at TEXT NOT NULL,
-            claimed_at TEXT,
             FOREIGN KEY (user_id) REFERENCES dat_users (id) ON DELETE CASCADE
         )',
         'CREATE TABLE dat_login_logs (
@@ -146,6 +145,10 @@ function integration_schema(): array
             success INTEGER NOT NULL DEFAULT 0,
             reason TEXT,
             created_at TEXT NOT NULL
+        )',
+        'CREATE TABLE dat_migrations (
+            filename TEXT PRIMARY KEY,
+            applied_at TEXT NOT NULL
         )',
     ];
 }
@@ -510,6 +513,47 @@ dat_exec('UPDATE dat_guest_sessions SET expires_at = ? WHERE user_id = ?', ['200
 check('expired guest sessions are purged', dat_purge_guest_sessions() >= 1);
 check('purged guest account is gone', dat_user_by_id($staleUser['id']) === null);
 check('purged guest assets are gone', dat_asset_counts($staleUser['id'])['total'] === 0);
+
+/* ------------------------------------------------------- housekeeping -- */
+
+echo PHP_EOL . 'Housekeeping' . PHP_EOL;
+
+// An expired message with a reply, an old rate row and an old login log.
+$expiredThread = dat_create_finder_message($board, 'will be purged');
+check('a message can be created for the purge test', $expiredThread['success'] === true);
+
+dat_exec(
+    'UPDATE dat_messages SET expires_at = ? WHERE sender_token = ?',
+    ['2000-01-01 00:00:00', $expiredThread['token']]
+);
+dat_exec(
+    'INSERT INTO dat_messages (id, asset_id, sender_token, direction, reply_to_id, content, status, created_at, expires_at)
+     VALUES (?, ?, ?, 2, (SELECT id FROM dat_messages WHERE sender_token = ? LIMIT 1), ?, 1, ?, ?)',
+    [dat_uuid(), $board['id'], $expiredThread['token'], $expiredThread['token'], 'reply that must go too', dat_now(), '2000-01-01 00:00:00']
+);
+
+dat_exec('INSERT INTO dat_message_rate (ip_hash, asset_id, created_at) VALUES (?, NULL, ?)', [str_repeat('a', 64), '2000-01-01 00:00:00']);
+dat_exec(
+    'INSERT INTO dat_login_logs (user_id, identifier, ip_hash, user_agent, success, reason, created_at)
+     VALUES (NULL, ?, NULL, NULL, 0, NULL, ?)',
+    ['ancient@example.com', '2000-01-01 00:00:00']
+);
+
+$before = [
+    'messages' => (int) dat_one('SELECT COUNT(*) AS c FROM dat_messages')['c'],
+    'rate' => (int) dat_one('SELECT COUNT(*) AS c FROM dat_message_rate')['c'],
+    'logs' => (int) dat_one('SELECT COUNT(*) AS c FROM dat_login_logs')['c'],
+];
+
+$removed = dat_run_maintenance();
+
+check('expired messages and their replies are removed', $removed['messages'] >= 2, json_encode($removed));
+check('the thread really is gone', dat_message_thread($board['id'], $expiredThread['token'], $board['public_id']) === []);
+$staleRate = (int) dat_one('SELECT COUNT(*) AS c FROM dat_message_rate WHERE created_at = ?', ['2000-01-01 00:00:00'])['c'];
+check('stale rate rows are pruned', $removed['rate_rows'] >= 1 && $staleRate === 0,
+    json_encode(['removed' => $removed['rate_rows'], 'stale_left' => $staleRate]));
+check('old login logs are pruned', $removed['login_logs'] >= 1 && (int) dat_one('SELECT COUNT(*) AS c FROM dat_login_logs')['c'] < $before['logs']);
+check('recent messages survive the pass', (int) dat_one('SELECT COUNT(*) AS c FROM dat_messages')['c'] < $before['messages']);
 
 echo PHP_EOL . ($failures === 0
     ? "All {$checks} checks passed." . PHP_EOL
