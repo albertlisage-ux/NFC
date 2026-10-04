@@ -173,7 +173,12 @@ if (!function_exists('dat_tag_card')) {
         $isFound = (int) $asset['status'] === DAT_ASSET_STATUS_FOUND;
         $compact = !empty($options['compact']);
         $foundUrl = $options['found_url'] ?? null;
+        $editUrl = $options['edit_url'] ?? null;
         $whatsappUrl = $options['whatsapp_url'] ?? null;
+        // Only a pet is something people find. Every other product carries
+        // information its owner adds to and edits, so its page offers that
+        // instead of a lost-property form.
+        $offersFinderForm = dat_type_offers_finder_form($asset['type']);
         // The tag page owns the h1; previews embedded in another page use h2.
         $headingLevel = (int) ($options['heading_level'] ?? 1);
         $headingTag = in_array($headingLevel, [1, 2, 3, 4, 5, 6], true) ? 'h' . $headingLevel : 'h1';
@@ -193,7 +198,12 @@ if (!function_exists('dat_tag_card')) {
                 <?= dat_status_pill($asset['status']) ?>
             </header>
 
-            <?php if ($isLost): ?>
+            <?php if (!$offersFinderForm): ?>
+                <div class="notice notice-info">
+                    <strong><?= e(t('public.managed_title', 'This page is kept up to date by its owner.')) ?></strong>
+                    <p><?= e(t('public.managed_body', 'The code on the product is permanent. What it opens is not: details, prices, opening hours and photos can be added or changed at any time, without reprinting anything.')) ?></p>
+                </div>
+            <?php elseif ($isLost): ?>
                 <div class="notice notice-warn">
                     <strong><?= e(t('public.lost_title', 'This asset is reported lost.')) ?></strong>
                     <p><?= e(t('public.lost_body', 'If you have found it, please send a message. The owner will be notified.')) ?></p>
@@ -236,12 +246,18 @@ if (!function_exists('dat_tag_card')) {
                 </dl>
             <?php endif; ?>
 
-            <?php if ($foundUrl || $whatsappUrl): ?>
+            <?php if ($foundUrl || $editUrl || $whatsappUrl): ?>
                 <div class="tag-actions">
                     <?php if ($foundUrl): ?>
                         <a class="btn btn-primary btn-block" href="<?= e($foundUrl) ?>">
                             <i class="fa-solid fa-hand-holding-heart" aria-hidden="true"></i>
                             <?= e(t('public.found_cta', 'I found this')) ?>
+                        </a>
+                    <?php endif; ?>
+                    <?php if ($editUrl): ?>
+                        <a class="btn btn-primary btn-block" href="<?= e($editUrl) ?>">
+                            <i class="fa-solid fa-pen-to-square" aria-hidden="true"></i>
+                            <?= e(t('public.edit_cta', 'Add or edit information')) ?>
                         </a>
                     <?php endif; ?>
                     <?php if ($whatsappUrl): ?>
@@ -251,6 +267,9 @@ if (!function_exists('dat_tag_card')) {
                         </a>
                     <?php endif; ?>
                 </div>
+                <?php if ($editUrl): ?>
+                    <p class="form-hint"><?= e(t('public.edit_hint', 'The editor opens for the account that owns this tag. Sign in with that account and the changes appear on this page straight away.')) ?></p>
+                <?php endif; ?>
             <?php endif; ?>
 
             <p class="tag-privacy">

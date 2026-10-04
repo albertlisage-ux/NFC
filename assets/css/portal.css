@@ -928,6 +928,7 @@ textarea { min-height: 130px; resize: vertical; }
 .demo-stages:has(#step-3:target) .demo-step[href="#step-3"],
 .demo-stages:has(#step-4:target) .demo-step[href="#step-4"],
 .demo-stages:has(#step-5:target) .demo-step[href="#step-5"],
+.demo-stages:has(#step-6:target) .demo-step[href="#step-6"],
 .demo-stages:not(:has(.demo-stage:target)) .demo-step[href="#step-1"] {
   background: var(--accent); border-color: var(--accent); color: #fff;
 }
@@ -960,6 +961,8 @@ textarea { min-height: 130px; resize: vertical; }
 }
 .demo-facts { margin: 22px 0; display: grid; gap: 14px; }
 .demo-facts dt { font-size: .78rem; text-transform: uppercase; letter-spacing: .08em; color: var(--muted); margin-bottom: 4px; }
+.demo-facts dt .pill { margin-left: 6px; text-transform: none; letter-spacing: 0; }
+.demo-empty { color: var(--muted); font-style: italic; }
 .demo-facts dd { margin: 0; }
 .demo-chip {
   display: inline-block; margin: 0 6px 6px 0; padding: 4px 10px;
@@ -979,6 +982,11 @@ textarea { min-height: 130px; resize: vertical; }
 .demo-qr-small svg { max-width: 170px; }
 
 .demo-note { background: var(--surface-alt); border: 1px solid var(--line); border-radius: var(--r-card); padding: 22px; }
+.demo-more-title { margin: 40px 0 16px; font-size: 1.15rem; }
+.demo-jobs .tile {
+  height: 100%; background: var(--surface-alt);
+  border: 1px solid var(--line-soft); border-radius: var(--r-card); padding: 20px;
+}
 .demo-note h3 { font-size: 1rem; }
 
 .demo-frame { border: 1px solid var(--line); border-radius: var(--r-card); overflow: hidden; background: var(--surface-alt); }

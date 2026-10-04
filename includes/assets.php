@@ -67,6 +67,7 @@ if (!function_exists('dat_asset_types')) {
             DAT_ASSET_TYPE_MENU_BOARD => [
                 'key' => 'menu_board',
                 'category' => 'signage',
+                'purpose' => 'information',
                 'icon' => 'fa-solid fa-rectangle-list',
                 'emoji' => "\u{1F4CB}",
                 'label' => t('type.menu_board', 'Menu board'),
@@ -82,6 +83,7 @@ if (!function_exists('dat_asset_types')) {
             DAT_ASSET_TYPE_POSTER => [
                 'key' => 'poster',
                 'category' => 'signage',
+                'purpose' => 'information',
                 'icon' => 'fa-solid fa-image',
                 'emoji' => "\u{1F5BC}",
                 'label' => t('type.poster', 'NFC poster'),
@@ -95,6 +97,7 @@ if (!function_exists('dat_asset_types')) {
             DAT_ASSET_TYPE_WRISTBAND => [
                 'key' => 'wristband',
                 'category' => 'wearables',
+                'purpose' => 'information',
                 'icon' => 'fa-solid fa-clock',
                 'emoji' => "\u{1F39F}",
                 'label' => t('type.wristband', 'Wristband'),
@@ -108,6 +111,7 @@ if (!function_exists('dat_asset_types')) {
             DAT_ASSET_TYPE_NECKLACE => [
                 'key' => 'necklace',
                 'category' => 'wearables',
+                'purpose' => 'information',
                 'icon' => 'fa-solid fa-gem',
                 'emoji' => "\u{1F4FF}",
                 'label' => t('type.necklace', 'Necklace'),
@@ -122,6 +126,7 @@ if (!function_exists('dat_asset_types')) {
             DAT_ASSET_TYPE_LANYARD => [
                 'key' => 'lanyard',
                 'category' => 'wearables',
+                'purpose' => 'information',
                 'icon' => 'fa-solid fa-id-badge',
                 'emoji' => "\u{1F3F7}",
                 'label' => t('type.lanyard', 'Lanyard'),
@@ -136,6 +141,7 @@ if (!function_exists('dat_asset_types')) {
             DAT_ASSET_TYPE_KEYCHAIN => [
                 'key' => 'keychain',
                 'category' => 'carry',
+                'purpose' => 'information',
                 'icon' => 'fa-solid fa-key',
                 'emoji' => "\u{1F511}",
                 'label' => t('type.keychain', 'Keychain'),
@@ -149,6 +155,7 @@ if (!function_exists('dat_asset_types')) {
             DAT_ASSET_TYPE_MINI_TAG => [
                 'key' => 'mini_tag',
                 'category' => 'carry',
+                'purpose' => 'information',
                 'icon' => 'fa-solid fa-certificate',
                 'emoji' => "\u{1F3F7}",
                 'label' => t('type.mini_tag', 'Mini tag'),
@@ -163,6 +170,10 @@ if (!function_exists('dat_asset_types')) {
             DAT_ASSET_TYPE_PET => [
                 'key' => 'pet',
                 'category' => 'assets',
+                // A pet is the one product people actually lose, so it keeps
+                // the "I found this" form. Everything else answers a question
+                // or carries information that its owner keeps up to date.
+                'purpose' => 'lost_found',
                 'icon' => 'fa-solid fa-dog',
                 'emoji' => "\u{1F415}",
                 'label' => t('type.pet', 'Pet'),
@@ -177,6 +188,7 @@ if (!function_exists('dat_asset_types')) {
             DAT_ASSET_TYPE_CLOTHING => [
                 'key' => 'clothing',
                 'category' => 'assets',
+                'purpose' => 'information',
                 'icon' => 'fa-solid fa-shirt',
                 'emoji' => "\u{1F455}",
                 'label' => t('type.clothing', 'Clothing'),
@@ -208,11 +220,37 @@ if (!function_exists('dat_asset_type_meta')) {
         return $types[$type] ?? [
             'key' => 'other',
             'category' => 'assets',
+            'purpose' => 'information',
             'icon' => 'fa-solid fa-box',
             'emoji' => "\u{1F4E6}",
             'label' => t('type.other', 'Other'),
             'fields' => [],
         ];
+    }
+}
+
+/**
+ * What a tag is for. A pet is the product people lose, so its page carries
+ * the anonymous "I found this" form. Every other product answers a question
+ * and carries information its owner adds to and edits over time.
+ *
+ * @return string 'lost_found' or 'information'
+ */
+if (!function_exists('dat_type_purpose')) {
+    function dat_type_purpose($type)
+    {
+        $meta = dat_asset_type_meta($type);
+        $purpose = (string) ($meta['purpose'] ?? 'information');
+
+        return $purpose === 'lost_found' ? 'lost_found' : 'information';
+    }
+}
+
+/** True when this type keeps the anonymous finder form on its public page. */
+if (!function_exists('dat_type_offers_finder_form')) {
+    function dat_type_offers_finder_form($type)
+    {
+        return dat_type_purpose($type) === 'lost_found';
     }
 }
 

@@ -43,6 +43,17 @@ $typeMeta = dat_asset_type_meta($asset['type']);
 $isVisible = dat_asset_is_public($status);
 $images = $isVisible ? dat_image_keys($asset['id']) : [];
 
+// Only a pet offers "I found this". Every other product carries information
+// its owner adds to and edits, so its page points at that editor instead.
+$actionOptions = [
+    'whatsapp_url' => dat_whatsapp_url($asset, dat_whatsapp_message($asset)),
+];
+if (dat_type_offers_finder_form($asset['type'])) {
+    $actionOptions['found_url'] = dat_url('t/found.php') . '?id=' . rawurlencode($asset['public_id']);
+} else {
+    $actionOptions['edit_url'] = dat_url('dashboard/asset-edit.php') . '?id=' . rawurlencode($asset['id']);
+}
+
 // A finder who already wrote to the owner can reopen their own thread.
 $senderToken = dat_sender_token(false);
 $threadUrl = null;
@@ -76,10 +87,7 @@ dat_page_start([
                 </a>
             </p>
 
-            <?php dat_tag_card(dat_public_asset($asset), $images, [
-                'found_url' => dat_url('t/found.php') . '?id=' . rawurlencode($asset['public_id']),
-                'whatsapp_url' => dat_whatsapp_url($asset, dat_whatsapp_message($asset)),
-            ]); ?>
+            <?php dat_tag_card(dat_public_asset($asset), $images, $actionOptions); ?>
 
             <?php if ($threadUrl !== null): ?>
                 <p class="tag-page-nav">

@@ -40,12 +40,35 @@ $split = dat_demo_field_split($entry);
 $board = dat_demo_entry('menu_board');
 $wifiPayload = dat_wifi_qr_payload($board['metadata']['wifi_network'] ?? '', $board['metadata']['wifi_password'] ?? '');
 
+/*
+ * The other half of the product: a tag that is not about losing anything.
+ * The menu board is the clearest example, its owner changes prices and the
+ * daily menu and the printed code never has to change with them.
+ */
+$infoEntry = dat_demo_information_entry();
+$infoUrl = dat_tag_url($infoEntry['public_id']);
+$infoImage = dat_product_image_url($infoEntry['image']);
+$infoTypeMeta = dat_asset_type_meta($infoEntry['type']);
+$infoAsset = dat_asset_by_public_id($infoEntry['public_id']);
+$infoEditUrl = $infoAsset !== null
+    ? dat_url('dashboard/asset-edit.php') . '?id=' . rawurlencode($infoAsset['id'])
+    : dat_url('account/login.php');
+$infoFields = [];
+foreach ($infoTypeMeta['fields'] as $field) {
+    $infoFields[] = [
+        'label' => $field['label'],
+        'value' => (string) ($infoEntry['metadata'][$field['key']] ?? ''),
+        'public' => !empty($field['public']),
+    ];
+}
+
 $steps = [
     ['key' => '1', 'label' => t('demo.step1_nav', 'The tag')],
     ['key' => '2', 'label' => t('demo.step2_nav', 'The page')],
     ['key' => '3', 'label' => t('demo.step3_nav', 'The message')],
     ['key' => '4', 'label' => t('demo.step4_nav', 'The reply')],
-    ['key' => '5', 'label' => t('demo.step5_nav', 'Your own tag')],
+    ['key' => '5', 'label' => t('demo.info_nav', 'Edit the page')],
+    ['key' => '6', 'label' => t('demo.step5_nav', 'Your own tag')],
 ];
 
 dat_page_start([
@@ -243,9 +266,100 @@ dat_page_start([
         </section>
 
         <section class="demo-stage" id="step-5" role="tabpanel" aria-labelledby="tab-step-5" tabindex="0">
+            <div class="demo-copy demo-copy-wide">
+                <p class="eyebrow"><?= e(t('demo.info_eyebrow', 'Step 5 of 6')) ?></p>
+                <h2><?= e(t('demo.info_title', 'Most tags are not about losing something')) ?></h2>
+                <p><?= e(sprintf(t('demo.info_body', 'The %s is the other half of the product. Nothing has gone missing here. What changes is the information: the daily menu, the price of a dish, the opening hours, the guest Wi-Fi name, a new photo. The owner edits the page and the code on the board, printed months ago, opens the new version straight away.'), $infoEntry['name'])) ?></p>
+                <p><?= e(t('demo.info_body2', 'That is why the tag page for this product offers "Add or edit information" instead of a lost-property form. Only the pet tag keeps the finder form.')) ?></p>
+            </div>
+
             <div class="demo-grid">
                 <div class="demo-copy">
-                    <p class="eyebrow"><?= e(t('demo.step5_eyebrow', 'Step 5 of 5')) ?></p>
+                    <div class="demo-note">
+                        <h3><?= e(t('demo.info_side_title', 'What the owner can add or change')) ?></h3>
+                        <dl class="demo-facts">
+                            <?php foreach ($infoFields as $field): ?>
+                                <div>
+                                    <dt>
+                                        <?= e($field['label']) ?>
+                                        <?php if (!$field['public']): ?>
+                                            <span class="pill pill-neutral"><i class="fa-solid fa-lock" aria-hidden="true"></i><?= e(t('demo.info_private', 'stays private')) ?></span>
+                                        <?php endif; ?>
+                                    </dt>
+                                    <dd><?= $field['value'] !== '' ? e($field['value']) : '<span class="demo-empty">' . e(t('demo.info_empty', 'not filled in yet')) . '</span>' ?></dd>
+                                </div>
+                            <?php endforeach; ?>
+                        </dl>
+                        <p class="form-hint"><?= e(t('demo.info_note', 'The same editor holds the name, the description, the photos and the status. Nothing on the printed tag has to change, and the address of the page never moves.')) ?></p>
+                    </div>
+
+                    <p class="demo-actions">
+                        <a class="btn btn-primary btn-lg" href="<?= e($infoEditUrl) ?>">
+                            <i class="fa-solid fa-pen-to-square" aria-hidden="true"></i>
+                            <?= e(t('demo.info_open_editor', 'Open the editor')) ?>
+                        </a>
+                        <a class="btn btn-ghost btn-lg" href="#step-6"><?= e(t('demo.next', 'Next step')) ?></a>
+                    </p>
+                </div>
+
+                <div class="demo-visual">
+                    <?php if ($infoImage !== null): ?>
+                        <figure class="product-shot"><img src="<?= e($infoImage) ?>" alt="<?= e($infoEntry['name']) ?>" loading="lazy"></figure>
+                    <?php endif; ?>
+                    <div class="demo-note">
+                        <h3><?= e(t('demo.info_page_title', 'The page this code opens')) ?></h3>
+                        <p><code><?= e($infoUrl) ?></code></p>
+                        <p class="form-hint"><?= e(t('demo.info_page_note', 'Live, not a screenshot. Open it on a phone and the same fields appear.')) ?></p>
+                        <p class="demo-actions">
+                            <a class="btn btn-ghost" href="<?= e($infoUrl) ?>" target="_blank" rel="noopener">
+                                <?= e(t('demo.open_new_tab', 'Open in a new tab')) ?>
+                                <i class="fa-solid fa-arrow-up-right-from-square" aria-hidden="true"></i>
+                            </a>
+                        </p>
+                    </div>
+                </div>
+            </div>
+
+            <?php /*
+             * The same idea, other jobs. Every tile opens a real page from the
+             * demo account, so none of this is a drawing of a feature.
+             */ ?>
+            <?php
+            $otherJobs = [
+                ['entry' => 'lanyard', 'title' => t('demo.job_pass_title', 'Which visitor pass is still out'), 'body' => t('demo.job_pass_body', 'A tap at the desk shows the pass and who is holding it, so the paper list stops mattering.')],
+                ['entry' => 'mini_tag', 'title' => t('demo.job_tool_title', 'Which tool lives in the box'), 'body' => t('demo.job_tool_body', 'A label the size of a fingernail names the tool and where it belongs.')],
+                ['entry' => 'wristband', 'title' => t('demo.job_band_title', 'Which booking a band belongs to'), 'body' => t('demo.job_band_body', 'At the gate a single tap matches the guest to the booking.')],
+                ['entry' => 'pet', 'title' => t('demo.job_pet_title', 'The one tag that keeps the finder form'), 'body' => t('demo.job_pet_body', 'A lost pet is the case where a stranger really does have to reach the owner.')],
+            ];
+            ?>
+            <h3 class="demo-more-title"><?= e(t('demo.jobs_title', 'The same tag, other jobs')) ?></h3>
+            <div class="grid demo-jobs">
+                <?php foreach ($otherJobs as $job): ?>
+                    <?php
+                    $jobEntry = dat_demo_entry($job['entry']);
+                    if ($jobEntry === null) {
+                        continue;
+                    }
+                    ?>
+                    <div class="grid-item large-span-3 medium-span-6 small-span-12">
+                        <div class="tile">
+                            <h5><?= e($job['title']) ?></h5>
+                            <p class="tile-body"><?= e($job['body']) ?></p>
+                            <div class="tile-links">
+                                <a class="text-link" href="<?= e(dat_tag_url($jobEntry['public_id'])) ?>">
+                                    <i class="fa-solid fa-arrow-up-right-from-square" aria-hidden="true"></i><b><?= e(t('demo.job_open', 'Open the live page')) ?></b>
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+                <?php endforeach; ?>
+            </div>
+        </section>
+
+        <section class="demo-stage" id="step-6" role="tabpanel" aria-labelledby="tab-step-6" tabindex="0">
+            <div class="demo-grid">
+                <div class="demo-copy">
+                    <p class="eyebrow"><?= e(t('demo.step5_eyebrow', 'Step 6 of 6')) ?></p>
                     <h2><?= e(t('demo.step5_title', 'Your own tag, in a minute')) ?></h2>
                     <p><?= e(t('demo.step5_body', 'Scan the code with a phone, create one tag as a guest and keep it by registering. No app, no payment, nothing to install on the stand.')) ?></p>
 

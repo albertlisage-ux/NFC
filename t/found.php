@@ -34,6 +34,17 @@ if ($asset === null || !dat_asset_is_public($asset['status'])) {
     exit;
 }
 
+/*
+ * The finder form belongs to the products people lose. A menu board, a poster
+ * or a keychain carries information its owner maintains, so asking a visitor
+ * "did you find this?" makes no sense there. Send them back to the tag page,
+ * which offers the editor instead.
+ */
+if (!dat_type_offers_finder_form($asset['type'])) {
+    header('Location: ' . dat_tag_url($asset['public_id']));
+    exit;
+}
+
 $errors = [];
 $content = '';
 $sent = false;

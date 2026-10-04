@@ -21,7 +21,9 @@ require_once __DIR__ . '/catalog.php';
 if (!function_exists('dat_demo_showcase_key')) {
     function dat_demo_showcase_key()
     {
-        return 'keychain';
+        // The lost-and-found chain only makes sense on the one product people
+        // actually lose, so the walkthrough follows the pet tag.
+        return 'pet';
     }
 }
 
@@ -38,6 +40,26 @@ if (!function_exists('dat_demo_showcase_asset')) {
     {
         $entry = dat_demo_showcase_entry();
         return $entry === null ? null : dat_asset_by_public_id($entry['public_id']);
+    }
+}
+
+/**
+ * The product the "add or edit information" step follows.
+ *
+ * The opposite story to a lost pet: nothing has gone missing, the owner just
+ * changes what the page says, and the printed code keeps working.
+ */
+if (!function_exists('dat_demo_information_key')) {
+    function dat_demo_information_key()
+    {
+        return 'menu_board';
+    }
+}
+
+if (!function_exists('dat_demo_information_entry')) {
+    function dat_demo_information_entry()
+    {
+        return dat_demo_entry(dat_demo_information_key());
     }
 }
 
